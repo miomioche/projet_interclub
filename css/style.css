@@ -1,0 +1,424 @@
+/* ==========================================================================  
+   Palette & Reset  
+   ========================================================================== */
+:root {
+  --brick-red:   #B23A48;
+  --sand:        #F2E5D7;
+  --deep-blue:   #2C3E50;
+  --gold:        #E2B659;
+  --text-main:   #333;
+  --bg-light:    #f9f9f9;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-main);
+  
+}
+
+/* ==========================================================================  
+   Container & Main flex  
+   ========================================================================== */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 0;
+  flex: 1;             /* prend tout l'espace disponible */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================  
+   Header & Nav  
+   ========================================================================== */
+.header {
+  background-color: var(--deep-blue);
+  color: white;
+  padding: 16px 0;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: normal;
+}
+
+.header nav {
+  margin-top: 6px;
+}
+
+.header nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 12px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  transition: opacity 0.2s;
+}
+
+.header nav a:hover {
+  opacity: 0.8;
+}
+
+
+  
+/* ==== HERO BANNER ==== */
+
+.hero-banner {
+  position: relative;
+  width: 100%;           /* plein largeur du container parent */
+  max-width: 1200px;     /* jamais plus large que ton container principal */
+  height: 400px;         /* la hauteur que tu veux pour ton visuel */
+  margin: 2rem auto;     /* centré dans ta page */
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.hero-banner img {
+  width: 100%; 
+  height: 100%;
+  object-fit: cover;     /* cover → croppe sans déformation */
+  display: block;
+}
+
+/* overlay texte + bouton */
+.hero-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  z-index: 2;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+}
+
+.hero-text h1 {
+  font-size: 3rem;
+  line-height: 1.2;
+  margin-bottom: .5rem;
+}
+
+.hero-text p {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: #cc334d;
+  color: white;
+  padding: .75em 1.5em;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color .2s, transform .2s;
+}
+.cta-button:hover {
+  background-color: #b12b3f;
+  transform: translateY(-2px);
+}
+
+
+/* === CONTENEUR & CARDS === */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 2rem auto;
+}
+
+.card {
+  background: #fff;
+  border-left: 4px solid #ccc;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.orange-card {
+  border-color: #e2b659;
+  background: #fff8ec;
+}
+
+.card h2 {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+}
+.card .icon {
+  margin-right: 0.5rem;
+}
+
+/* === MAP CONTAINER === */
+.map-container {
+  width: 100%;
+  height: 250px;
+  margin-top: 1rem;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* ==========================================================================  
+   Tableau équipe façon BWF  
+   ========================================================================== */
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+}
+.team-table thead th {
+  background: var(--deep-blue);
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+.team-table td,
+.team-table th {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+.team-table tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+.team-table tbody tr:hover {
+  background: #eef6fc;
+}
+/* Colonne rang */
+.team-table .rank {
+  width: 8%;
+  font-weight: bold;
+  color: var(--deep-blue);
+}
+/* Joueur: photo + lien */
+.team-table .player-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.team-table .player-cell img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--deep-blue);
+}
+/* Stats centrées */
+.team-table .stat {
+  text-align: center;
+  
+}
+
+/* Responsive mobile: chaque cellule devient “carte” */
+@media (max-width: 768px) {
+  .team-table thead { display: none; }
+  .team-table,
+  .team-table tbody,
+  .team-table tr,
+  .team-table td {
+    display: block;
+    width: 100%;
+  }
+  .team-table tr { margin-bottom: 1.5rem; }
+  .team-table td {
+    position: relative;
+    padding-left: 45%;
+    text-align: right;
+  }
+  .team-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    color: var(--deep-blue);
+  }
+}
+
+/* ==========================================================================  
+   Fiche joueur  
+   ========================================================================== */
+.player-profile {
+  max-width: 800px;
+  margin: 2rem auto;
+  text-align: left;
+}
+.photo-profil {
+  width: 120px; 
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--deep-blue);
+  display: block;
+  margin-bottom: 1rem;
+}
+.player-profile h2 {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+}
+.player-profile .classements {
+  list-style: none;
+  margin-bottom: 1.5rem;
+}
+.player-profile .classements li {
+  margin: 0.5rem 0;
+}
+.player-stats {
+  background: #f5f0e6;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+.player-stats h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+}
+.player-stats ul {
+  list-style: none;
+  padding-left: 0;
+}
+.player-stats li {
+  margin: 0.5rem 0;
+}
+.match-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 2rem;
+}
+.match-card {
+  flex: 1;
+  min-width: 280px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+.match-card h4 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+.back-link {
+  margin-top: 1rem;
+}
+.back-link a {
+  color: var(--deep-blue);
+  text-decoration: none;
+  font-weight: bold;
+}
+.back-link a:hover {
+  text-decoration: underline;
+}
+.player-cell img,
+.photo-profil {
+  display: block;
+  object-fit: cover;
+  /* background-color: #f0f0f0;  couleur de fond si image manquante */
+}
+
+/* masque complètement l’élément si src est vide ou introuvable */
+.player-cell img[src=""],
+.photo-profil[src=""] {
+  display: none;
+}
+/* Photo ronde centrée */
+.photo-profil {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  margin: 1.5rem auto;
+}
+
+/* Conteneur du profil */
+.player-profile {
+  max-width: 700px;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+/* Liste des classements sous le nom */
+.classements {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 2rem;
+}
+.classements li {
+  margin: 0.3rem 0;
+  font-size: 0.95rem;
+}
+
+/* Statistiques globales et disciplines */
+.player-stats, .disciplines {
+  margin: 2rem auto;
+  max-width: 500px;
+  text-align: left;
+}
+
+/* Camemberts par discipline côte-à-côte */
+.disciplines {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+.chart-container {
+  text-align: center;
+  margin: 1rem;
+}
+.chart-container h4 {
+  margin-bottom: 0.5rem;
+}
+
+/* Cartes « Dernier match » & « Prochain match » */
+.orange-card {
+  background: #fff8ec;
+  border-color: #e2b659;
+  padding: 1rem;
+  margin: 1.5rem auto;
+}
+
+.stat-charts {
+  display: flex;
+  justify-content: center;  /* centre horizontalement */
+  flex-wrap: wrap;          /* passe à la ligne si besoin */
+  gap: 2rem;
+  margin: 2rem 0;
+}
+.stat-charts > div {
+  width: 200px;             /* taille fixe ou en % */
+  text-align: center;
+}
+
+/* ==========================================================================  
+   Footer  
+   ========================================================================== */
+.footer {
+  background: var(--deep-blue);
+  color: var(--sand);
+  text-align: center;
+  padding: 16px 0;
+  font-size: 0.85rem;
+  margin-top: auto;    /* poussé en bas si contenu court */
+}
