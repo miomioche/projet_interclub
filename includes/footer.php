@@ -1,3 +1,5 @@
-<div class="footer">
-    <p>&copy; 2025 - Club InterClubs Badminton d’Arras</p>
-</div>
+<footer class="footer">
+    © <?= date('Y') ?> – Club InterClubs Badminton d’Arras
+  </footer>
+</body>
+</html>

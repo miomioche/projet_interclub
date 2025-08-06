@@ -136,7 +136,6 @@ body {
   transform: translateY(-2px);
 }
 
-
 /* === CONTENEUR & CARDS === */
 .container {
   width: 90%;
@@ -411,6 +410,44 @@ body {
   text-align: center;
 }
 
+/* Accordéon Matchs */
+.card-header a {
+  display: block;
+  color: inherit;
+}
+.list-group-item .badge {
+  font-size: .85rem;
+  width: 4.5rem;
+}
+.fw-bold span {
+  font-weight: 600;
+  margin: 0 0.15rem;
+}
+.score-set { font-weight:600; margin:0 .2rem; }
+.set-win  { color: #2a7; }  /* vert pour le score supérieur */
+.set-lose { color: #e22; }  /* rouge pour le score inférieur */
+
+
+.list-group-item .bi {
+  font-size:1.2rem;
+  vertical-align:middle;
+  margin-right:.3rem;
+  color:#555;
+}
+.card-header a::after {
+  content: '▾';
+  float: right;
+  transition: transform .3s;
+}
+.card-header .show + a::after {
+  transform: rotate(-180deg);
+}
+.toggle-icon {
+  display: none !important;
+}
+.card-header .bi-chevron-down {
+  display: none !important;
+}
 /* ==========================================================================  
    Footer  
    ========================================================================== */
@@ -421,4 +458,26 @@ body {
   padding: 16px 0;
   font-size: 0.85rem;
   margin-top: auto;    /* poussé en bas si contenu court */
+}
+/* === Teaser-cards améliorées === */
+.teaser-card {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  transition: transform .2s, box-shadow .2s;
+}
+.teaser-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+.icon-wrapper {
+  font-size: 2.5rem;
+  color: var(--brick-red);
+}
+.card-title {
+  margin-bottom: .75rem;
+  font-weight: 600;
+}
+.card-text {
+  font-size: .9rem;
+  line-height: 1.4;
 }
