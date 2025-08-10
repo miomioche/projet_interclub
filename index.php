@@ -1,45 +1,62 @@
 <?php
-// index.php
 require __DIR__ . '/includes/db.php';
 
-try {
-    // On récupère la prochaine rencontre programmée
-    $stmt = $pdo->prepare(<<<SQL
-        SELECT
-            r.journee,
-            r.date_rencontre,
-            r.heure,
-            l.nom            AS lieu_nom,
-            c1.nom           AS equipe_dom,
-            r.score_domicile,
-            r.score_exterieur,
-            c2.nom           AS equipe_ext
-        FROM rencontres AS r
-        JOIN lieux       AS l  ON l.id  = r.lieu_id
-        JOIN adversaires AS c1 ON c1.id = r.domicile_id
-        JOIN adversaires AS c2 ON c2.id = r.exterieur_id
-        WHERE CONCAT(r.date_rencontre,' ',r.heure) >= NOW()
-        ORDER BY r.date_rencontre, r.heure
-        LIMIT 1
-    SQL);
-    $stmt->execute();
-    $next = $stmt->fetch(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die('Erreur BDD : ' . $e->getMessage());
-}
+// === Réglages ===
+$TEAM_ID = 1; // id de BCA 6 dans ta table teams (à ajuster si besoin)
 
+// === Requêtes ===
+// Prochaine rencontre
+$sql_next = "
+  SELECT f.*, th.short_name AS home_short, ta.short_name AS away_short,
+         th.name AS home_name, ta.name AS away_name
+  FROM fixtures f
+  JOIN teams th ON th.id = f.home_team_id
+  JOIN teams ta ON ta.id = f.away_team_id
+  WHERE (f.home_team_id = :tid OR f.away_team_id = :tid)
+    AND f.status = 'scheduled'
+  ORDER BY f.date_time ASC
+  LIMIT 1
+";
+$st = $pdo->prepare($sql_next);
+$st->execute(['tid' => $TEAM_ID]);
+$next_match = $st->fetch(PDO::FETCH_ASSOC);
+
+// Dernier résultat
+$sql_last = "
+  SELECT f.*, th.short_name AS home_short, ta.short_name AS away_short,
+         th.name AS home_name, ta.name AS away_name
+  FROM fixtures f
+  JOIN teams th ON th.id = f.home_team_id
+  JOIN teams ta ON ta.id = f.away_team_id
+  WHERE (f.home_team_id = :tid OR f.away_team_id = :tid)
+    AND f.status = 'played'
+  ORDER BY f.date_time DESC
+  LIMIT 1
+";
+$st = $pdo->prepare($sql_last);
+$st->execute(['tid' => $TEAM_ID]);
+$last_result = $st->fetch(PDO::FETCH_ASSOC);
+
+// Choix du bloc principal à afficher
+$primary     = $next_match ?: $last_result;
+$isUpcoming  = !empty($next_match);
+$sectionTitl = $isUpcoming ? 'Prochaine Rencontre' : 'Dernier Résultat';
+
+// Helpers
+function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+function dt_fr($ts){ return date('d/m/Y \à H\hi', strtotime($ts)); }
 ?>
-
-<!-- BANNIÈRE HERO -->
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Équipe InterClubs Badminton</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <title>Accueil — Club InterClubs Badminton d’Arras</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <?php include __DIR__ . '/includes/header.php'; ?>
+
+<?php include __DIR__ . '/includes/header.php'; ?>
+
 
 <main class="container">
   <div class="hero-banner position-relative mb-5">
@@ -53,73 +70,80 @@ try {
     </div>
   </div>
 </main>
+<!-- ===== Bloc central : Prochaine rencontre OU Dernier résultat ===== -->
+  <section class="home-section mb-4">
+    <h3 class="mb-2"><?= h($sectionTitl) ?></h3>
 
-<!-- SECTION PROCHAINE RENCONTRE -->
-<main id="next-match" class="container py-5">
-  <h2 class="mb-4 text-center">Prochaine Rencontre</h2>
-
-  <?php if ($next): ?>
-    <div class="card mx-auto" style="max-width: 600px;">
+    <div class="card shadow-sm">
       <div class="card-body">
-        <h3 class="card-title">Journée J<?= htmlspecialchars($next['journee']) ?></h3>
-        <p class="card-text mb-1">
-          <strong>Date / Heure :</strong>
-          <?= date('d/m/Y', strtotime($next['date_rencontre'])) ?>
-          à <?= substr($next['heure'], 0, 5) ?>
-        </p>
-        <p class="card-text mb-1">
-          <strong>Lieu :</strong> <?= htmlspecialchars($next['lieu_nom']) ?>
-        </p>
-        <p class="card-text mb-1">
-          <strong>Équipes :</strong>
-          <?= htmlspecialchars($next['equipe_dom']) ?> – <?= htmlspecialchars($next['equipe_ext']) ?>
-        </p>
-        <p class="card-text mb-3">
-          <strong>Score :</strong>
-          <?= $next['score_domicile'] ?> – <?= $next['score_exterieur'] ?>
-        </p>
-        <a href="rencontres.php" class="btn btn-primary">Voir le calendrier complet</a>
+        <?php if ($primary): ?>
+          <?php if ($primary['matchday']): ?>
+            <div class="text-muted mb-2">Journée <strong>J<?= (int)$primary['matchday'] ?></strong></div>
+          <?php endif; ?>
+
+          <div class="mb-1">
+            <strong>Date / Heure :</strong>
+            <?= h(dt_fr($primary['date_time'])) ?>
+          </div>
+
+          <div class="mb-1">
+            <strong>Lieu :</strong>
+            <?= h($primary['venue_name']) ?>
+            <?php if (!empty($primary['venue_city'])): ?>
+              — <?= h($primary['venue_city']) ?>
+            <?php endif; ?>
+          </div>
+
+          <div class="mb-1">
+            <strong>Équipes :</strong>
+            <?= h($primary['home_name']) ?> – <?= h($primary['away_name']) ?>
+          </div>
+
+          <?php if (!$isUpcoming && $primary['status'] === 'played'): ?>
+            <div class="mb-1">
+              <strong>Score :</strong>
+              <?= (int)$primary['score_home'] ?> – <?= (int)$primary['score_away'] ?>
+            </div>
+          <?php endif; ?>
+
+          <div class="mt-2">
+            <a href="rencontres.php" class="link">Voir le calendrier complet</a>
+          </div>
+        <?php else: ?>
+          <div class="text-muted">Aucune donnée disponible pour le moment.</div>
+        <?php endif; ?>
       </div>
     </div>
-  <?php else: ?>
-    <div class="alert alert-info text-center mx-auto" style="max-width: 600px;">
-      Aucune rencontre programmée pour le moment.
-    </div>
-  <?php endif; ?>
+  </section>
 
-  <!-- CARTES TEASER : Notre Équipe + Détails des Matchs -->
-
- <div class="col-sm-6">
-    <div class="card teaser-card h-100 border-0 shadow-sm text-center">
-      <div class="card-body d-flex flex-column">
-        <div class="icon-wrapper mb-3">
-          <i class="bi bi-people-fill"></i>
+  <!-- ===== Tes deux tuiles d’accueil (existant) ===== -->
+  <section class="home-tiles">
+    <div class="card shadow-sm mb-3">
+      <div class="card-body d-flex align-items-start">
+        <div class="me-3" style="font-size:22px">👥</div>
+        <div>
+          <div class="fw-bold mb-1">Notre équipe</div>
+          <div class="text-muted mb-1">Découvrez les joueuses et joueurs qui défendent nos couleurs en interclubs.</div>
+          <a href="equipe.php" class="link">Voir l’équipe</a>
         </div>
-        <h5 class="card-title">Notre Équipe</h5>
-        <p class="card-text flex-grow-1 text-muted">
-          Découvrez les joueuses et joueurs qui défendent nos couleurs en interclubs.
-        </p>
-        <a href="equipe.php" class="btn btn-outline-primary mt-auto">Voir l’équipe</a>
       </div>
     </div>
-  </div>
 
-  <!-- Carte Détails des Matchs -->
-  <div class="col-sm-6">
-    <div class="card teaser-card h-100 border-0 shadow-sm text-center">
-      <div class="card-body d-flex flex-column">
-        <div class="icon-wrapper mb-3">
-          <i class="bi bi-trophy-fill"></i>
+    <div class="card shadow-sm mb-3">
+      <div class="card-body d-flex align-items-start">
+        <div class="me-3" style="font-size:22px">🏆</div>
+        <div>
+          <div class="fw-bold mb-1">Détails des matchs</div>
+          <div class="text-muted mb-1">Plongez dans les scores et performances de chaque match de nos journées.</div>
+          <a href="matches.php" class="link">Voir les matchs</a>
         </div>
-        <h5 class="card-title">Détails des Matchs</h5>
-        <p class="card-text flex-grow-1 text-muted">
-          Plongez dans les scores et performances de chaque match de nos journées.
-        </p>
-        <a href="matches.php" class="btn btn-outline-primary mt-auto">Voir les matchs</a>
       </div>
     </div>
-  </div>
-</div>
+  </section>
+
 </main>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
+
+</body>
+</html>
