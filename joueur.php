@@ -8,6 +8,44 @@ if ($id <= 0) {
     exit;
 }
 
+/**
+ * Source étendue pour compter aussi les matchs du partenaire :
+ * - 1ère partie : lignes "normales" (joueur_id)
+ * - 2ème partie : duplication pour le binôme si le texte 'binome' matche "Prénom Nom" d'un joueur
+ * On conserve les mêmes colonnes utilisées par la page (type_match, resultat, date_match, nom_adversaire, score, lieu).
+ */
+$STATS_SRC = "
+(
+  SELECT
+    md.id,
+    md.joueur_id,
+    md.type_match,
+    md.resultat,
+    md.date_match,
+    md.nom_adversaire,
+    md.score,
+    md.lieu
+  FROM match_details md
+
+  UNION ALL
+
+  SELECT
+    md.id,
+    j2.id        AS joueur_id,
+    md.type_match,
+    md.resultat,
+    md.date_match,
+    md.nom_adversaire,
+    md.score,
+    md.lieu
+  FROM match_details md
+  JOIN joueurs j2
+    ON CONCAT(j2.prenom, ' ', j2.nom) COLLATE utf8mb4_general_ci
+     = TRIM(md.binome) COLLATE utf8mb4_general_ci
+  WHERE md.binome IS NOT NULL AND md.binome <> ''
+) AS v
+";
+
 // 2) Profil du joueur
 $stmt = $pdo->prepare("
   SELECT nom, prenom, photo, classement_simple, classement_double, classement_mixte
@@ -21,69 +59,70 @@ if (!$joueur) {
     exit;
 }
 
-// 3) Statistiques globales
-$stmt = $pdo->prepare("
+// 3) Statistiques globales (depuis la source étendue)
+$sqlGlobal = "
   SELECT 
-    COUNT(*)                   AS total,
-    SUM(resultat = 'victoire') AS victoires,
-    SUM(resultat = 'défaite')  AS defaites
-  FROM match_details
-  WHERE joueur_id = ?
-");
+    COUNT(*)                               AS total,
+    SUM(v.resultat = 'victoire')           AS victoires,
+    SUM(v.resultat = 'défaite')            AS defaites
+  FROM $STATS_SRC
+  WHERE v.joueur_id = ?
+";
+$stmt = $pdo->prepare($sqlGlobal);
 $stmt->execute([$id]);
-$g = $stmt->fetch(PDO::FETCH_ASSOC);
+$g = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['total'=>0,'victoires'=>0,'defaites'=>0];
 $total     = (int)$g['total'];
 $victoires = (int)$g['victoires'];
 $defaites  = (int)$g['defaites'];
 $winrate   = $total > 0 ? round($victoires/$total*100,1) : 0;
 
-// 4) Statistiques par discipline
+// 4) Statistiques par discipline (toujours sur la source étendue)
 $disciplines = [
   'simple' => 'Simple',
   'double' => 'Double',
   'mixte'  => 'Mixte',
 ];
 $statsDisc = [];
+$sqlDisc = "
+  SELECT 
+    COUNT(*)                               AS total,
+    SUM(v.resultat = 'victoire')           AS victoires,
+    SUM(v.resultat = 'défaite')            AS defaites
+  FROM $STATS_SRC
+  WHERE v.joueur_id = ?
+    AND v.type_match = ?
+";
 foreach ($disciplines as $type => $label) {
-    $sth = $pdo->prepare("
-      SELECT 
-        COUNT(*)                   AS total,
-        SUM(resultat = 'victoire') AS victoires,
-        SUM(resultat = 'défaite')  AS defaites
-      FROM match_details
-      WHERE joueur_id = ?
-        AND type_match = ?
-    ");
+    $sth = $pdo->prepare($sqlDisc);
     $sth->execute([$id, $type]);
-    $r = $sth->fetch(PDO::FETCH_ASSOC);
-    $t = (int)$r['total'];
-    $v = (int)$r['victoires'];
-    $d = (int)$r['defaites'];
+    $r = $sth->fetch(PDO::FETCH_ASSOC) ?: ['total'=>0,'victoires'=>0,'defaites'=>0];
     $statsDisc[$type] = [
       'label'     => $label,
-      'victoires' => $v,
-      'defaites'  => $d
+      'victoires' => (int)$r['victoires'],
+      'defaites'  => (int)$r['defaites']
     ];
 }
 
-// 5) Dernier et prochain match
-$stmtLast = $pdo->prepare("
-  SELECT date_match, nom_adversaire, type_match, score, resultat, lieu
-  FROM match_details
-  WHERE joueur_id = ? AND date_match < NOW()
-  ORDER BY date_match DESC
+// 5) Dernier et prochain match (également via la source étendue)
+$sqlLast = "
+  SELECT v.date_match, v.nom_adversaire, v.type_match, v.score, v.resultat, v.lieu
+  FROM $STATS_SRC
+  WHERE v.joueur_id = ? AND v.date_match < NOW()
+  ORDER BY v.date_match DESC
   LIMIT 1
-");
+";
+$stmtLast = $pdo->prepare($sqlLast);
 $stmtLast->execute([$id]);
 $last = $stmtLast->fetch(PDO::FETCH_ASSOC);
 
-$stmtNext = $pdo->prepare("
-  SELECT date_match, nom_adversaire, type_match, lieu
-  FROM match_details
-  WHERE joueur_id = ? AND date_match >= NOW()
-  ORDER BY date_match ASC
+$sqlNext = "
+  SELECT v.date_match, v.nom_adversaire, v.type_match, v.lieu
+  FROM $STATS_SRC
+  WHERE v.joueur_id = ? AND v.date_match >= NOW()
+  ORDER BY v.date_match ASC
   LIMIT 1
-");
+";
+$stmtNext = $pdo->prepare($sqlNext);
 $stmtNext->execute([$id]);
 $next = $stmtNext->fetch(PDO::FETCH_ASSOC);
 ?>
@@ -196,7 +235,6 @@ $next = $stmtNext->fetch(PDO::FETCH_ASSOC);
 <!-- Script Chart.js + Datalabels -->
 <script>
 document.addEventListener('DOMContentLoaded', ()=> {
-  // Enregistrer le plugin et forcer un backing-store 2×
   Chart.register(ChartDataLabels);
   Chart.defaults.devicePixelRatio = 2;
 
@@ -212,30 +250,23 @@ document.addEventListener('DOMContentLoaded', ()=> {
         datasets: [{
           data: [<?= $sd['victoires'] ?>, <?= $sd['defaites'] ?>],
           backgroundColor: colors,
-           devicePixelRatio: window.devicePixelRatio,
-    maintainAspectRatio: false,
+          devicePixelRatio: window.devicePixelRatio,
+          maintainAspectRatio: false,
         }]
       },
       options: {
         plugins: {
-          // Labels internes en pourcentage
           datalabels: {
             color: '#fff',
-            font: {
-              size: 14,
-              weight: 'bold'
-            },
+            font: { size: 14, weight: 'bold' },
             formatter: (value, ctx) => {
               const sum = ctx.dataset.data.reduce((a,b)=>a+b,0) || 1;
               return Math.round(value/sum*100) + '%';
             }
           },
-          // On conserve la légende globale si besoin, sinon disable
           legend: { display: false }
         },
-        layout: {
-          padding: 10
-        }
+        layout: { padding: 10 }
       },
       plugins: [ChartDataLabels]
     }

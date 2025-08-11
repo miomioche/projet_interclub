@@ -1,140 +1,140 @@
 <?php
-// matches.php
-date_default_timezone_set('Europe/Paris');
 require __DIR__ . '/includes/db.php';
 
-// 1) On récupère tous les mini‐matchs de match_details
-try {
-    $sql = <<<SQL
+/*
+ * On lit depuis match_details et on groupe par date/lieu côté PHP.
+ * Tri : les plus récents en haut.
+ */
+
+$sql = <<<SQL
 SELECT
-  md.id,
+  md.id           AS match_id,
   md.date_match,
   md.lieu,
   md.type_match,
-  CONCAT(j.prenom, ' ', j.nom) AS joueur_dom,
+  md.joueur_id,
+  j.prenom        AS joueur_prenom,
+  j.nom           AS joueur_nom,
   md.binome,
-  COALESCE(a.nom, md.nom_adversaire) AS adversaire,
+  md.nom_adversaire,
   md.score,
   md.resultat
-FROM match_details AS md
-JOIN joueurs         AS j  ON j.id = md.joueur_id
-LEFT JOIN adversaires AS a ON a.id = md.adversaire_id
-ORDER BY md.date_match,
-         FIELD(md.type_match, 'simple', 'double', 'mixte')
+FROM match_details md
+LEFT JOIN joueurs j ON j.id = md.joueur_id
+ORDER BY md.date_match DESC,
+         FIELD(md.type_match,'simple','double','mixte'),
+         md.id
 SQL;
-    $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die('Erreur BDD : ' . $e->getMessage());
-}
 
-// 2) On regroupe par date & lieu
-$byGroup = [];
-foreach ($rows as $m) {
-    $key = $m['date_match'] . '||' . $m['lieu'];
-    if (!isset($byGroup[$key])) {
-        $byGroup[$key] = [
-            'date_match' => $m['date_match'],
-            'lieu'       => $m['lieu'],
+$stmt = $pdo->query($sql);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+/* Regrouper par "rencontre" (même date/lieu) */
+$rencontres = [];
+foreach ($rows as $r) {
+    $key = ($r['date_match'] ?? '') . '||' . ($r['lieu'] ?? '');
+    if (!isset($rencontres[$key])) {
+        $rencontres[$key] = [
+            'date_match' => $r['date_match'],
+            'lieu'       => $r['lieu'],
             'matches'    => []
         ];
     }
-    $byGroup[$key]['matches'][] = $m;
+    $rencontres[$key]['matches'][] = $r;
 }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Équipe InterClubs Badminton – Détails des Matches</title>
+  <title>Matchs</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
-    table { width:100%; border-collapse: collapse; margin-bottom: 2rem; }
-    th, td { padding: .5rem; border: 1px solid #ddd; text-align: left; vertical-align: middle; }
-    th { background: #f7f7f7; }
-    .set-win  { color: #2a7; }  /* vert */
-    .set-lose { color: #e22; }  /* rouge */
-    .icon-cell { width:1.5rem; text-align:center; }
-    .result-cell { width:2.5rem; text-align:center; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding: .55rem .7rem; border-bottom: 1px solid #eee; }
+    th { text-align: left; }
+    .victoire { color: #28a745; font-weight: bold; }
+    .defaite  { color: #dc3545; font-weight: bold; }
+    .score-v  { color: #28a745; font-weight: bold; }
+    .score-d  { color: #dc3545; font-weight: bold; }
+    /* Optionnel: surligner la ligne en fonction du résultat
+    tr.win  td { background: #eaf7ef; }
+    tr.loss td { background: #fdeaea; }
+    */
   </style>
 </head>
 <body>
-  <?php include __DIR__ . '/includes/header.php'; ?>
+<?php include 'includes/header.php'; ?>
 
-  <main class="container py-5">
-    <h1 class="mb-4">Détails des Matches</h1>
+<main class="container">
+  <h1>Détails des Matchs</h1>
 
-    <?php if (empty($byGroup)): ?>
-      <p>Aucun match enregistré pour le moment.</p>
-    <?php else: ?>
-      <?php foreach ($byGroup as $grp): 
-        $dt    = new DateTime($grp['date_match']);
-        $date  = $dt->format('d/m/Y');
-        $time  = $dt->format('H:i');
-      ?>
-        <h2><?= $date ?> à <?= $time ?> — <em><?= htmlspecialchars($grp['lieu']) ?></em></h2>
-        <table>
-          <thead>
-            <tr>
-              <th class="icon-cell"></th>
-              <th>Type</th>
-              <th>Joueur(s)</th>
-              <th>Adversaire</th>
-              <th>Score par set</th>
-              <th class="result-cell">✔/✗</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($grp['matches'] as $m): 
-              // icône
-              switch ($m['type_match']) {
-                case 'double': $icon = 'bi-people-fill'; break;
-                case 'mixte':  $icon = 'bi-gender-ambiguous'; break;
-                default:       $icon = 'bi-person-fill';
-              }
-              // joueurs
-              $players = htmlspecialchars($m['joueur_dom']);
-              if (!empty($m['binome'])) {
-                $players .= ' &amp; ' . htmlspecialchars($m['binome']);
-              }
-              // sets colorisés
-              $parts = array_filter(
-                preg_split('/\s+/', trim($m['score'])),
-                fn($v)=> $v!== ''
-              );
-              $colored = [];
-              foreach ($parts as $pt) {
-                if (!str_contains($pt,'-')) continue;
-                list($a,$b) = explode('-',$pt,2);
-                $a=(int)$a; $b=(int)$b;
-                $classA = ($a>$b) ? 'set-win':'set-lose';
-                $classB = ($b>$a) ? 'set-win':'set-lose';
-                $colored[] = "<span class=\"$classA\">{$a}</span>-<span class=\"$classB\">{$b}</span>";
-              }
-              $displayScore = implode(' ', $colored);
+  <?php if (!$rencontres): ?>
+    <p>Aucune rencontre.</p>
+  <?php else: ?>
+    <?php foreach ($rencontres as $rec): ?>
+      <h3>
+        <?= $rec['date_match'] ? date('d/m/Y à H:i', strtotime($rec['date_match'])) : '—' ?>
+        — <?= htmlspecialchars($rec['lieu'] ?? 'Lieu non renseigné') ?>
+      </h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Joueur(s)</th>
+            <th>Adversaire</th>
+            <th>Score par set</th>
+            <th>✓ / ✗</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($rec['matches'] as $m): ?>
+            <?php
+              $rowClass = $m['resultat'] === 'victoire' ? 'win' : ($m['resultat'] === 'défaite' ? 'loss' : '');
             ?>
-            <tr>
-              <td class="icon-cell"><i class="bi <?= $icon ?>"></i></td>
-              <td><?= htmlspecialchars(ucfirst($m['type_match'])) ?></td>
-              <td><?= $players ?></td>
-              <td><?= htmlspecialchars($m['adversaire']) ?></td>
-              <td><?= $displayScore ?></td>
-              <td class="result-cell">
-                <?php if ($m['resultat']==='victoire'): ?>
-                  <span class="text-success">✓</span>
-                <?php else: ?>
-                  <span class="text-danger">✗</span>
+            <tr class="<?= $rowClass ?>">
+              <td>
+                <?php
+                  if ($m['type_match'] === 'simple') echo 'Simple';
+                  elseif ($m['type_match'] === 'double') echo 'Double';
+                  elseif ($m['type_match'] === 'mixte') echo 'Mixte';
+                  else echo htmlspecialchars($m['type_match'] ?? '—');
+                ?>
+              </td>
+              <td>
+                <?= htmlspecialchars(trim(($m['joueur_prenom'] ?? '').' '.($m['joueur_nom'] ?? ''))) ?>
+                <?php if (!empty($m['binome'])): ?>
+                  &amp; <?= htmlspecialchars($m['binome']) ?>
                 <?php endif; ?>
               </td>
+              <td><?= htmlspecialchars($m['nom_adversaire'] ?? '—') ?></td>
+              <td>
+                <?php
+                  if ($m['resultat'] === 'victoire') {
+                      echo '<span class="score-v">'.htmlspecialchars($m['score'] ?? '—').'</span>';
+                  } elseif ($m['resultat'] === 'défaite') {
+                      echo '<span class="score-d">'.htmlspecialchars($m['score'] ?? '—').'</span>';
+                  } else {
+                      echo htmlspecialchars($m['score'] ?? '—');
+                  }
+                ?>
+              </td>
+              <td>
+                <?php
+                  if ($m['resultat'] === 'victoire') echo '<span class="victoire">✓</span>';
+                  elseif ($m['resultat'] === 'défaite') echo '<span class="defaite">✗</span>';
+                  else echo '–';
+                ?>
+              </td>
             </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      <?php endforeach; ?>
-    <?php endif; ?>
-  </main>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endforeach; ?>
+  <?php endif; ?>
+</main>
 
-  <?php include __DIR__ . '/includes/footer.php'; ?>
+<?php include 'includes/footer.php'; ?>
 </body>
 </html>
