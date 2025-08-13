@@ -107,7 +107,7 @@ function dt_fr($ts){ return date('d/m/Y \à H\hi', strtotime($ts)); }
           <?php endif; ?>
 
           <div class="mt-2">
-            <a href="rencontres.php" class="link">Voir le calendrier complet</a>
+            <a class="btn btn-primary btn-lg" href="rencontres.php">Voir le calendrier complet</a>
           </div>
         <?php else: ?>
           <div class="text-muted">Aucune donnée disponible pour le moment.</div>
@@ -118,27 +118,20 @@ function dt_fr($ts){ return date('d/m/Y \à H\hi', strtotime($ts)); }
 
   <!-- ===== Tes deux tuiles d’accueil (existant) ===== -->
   <section class="home-tiles">
-    <div class="card shadow-sm mb-3">
-      <div class="card-body d-flex align-items-start">
-        <div class="me-3" style="font-size:22px">👥</div>
-        <div>
-          <div class="fw-bold mb-1">Notre équipe</div>
-          <div class="text-muted mb-1">Découvrez les joueuses et joueurs qui défendent nos couleurs en interclubs.</div>
-          <a href="equipe.php" class="link">Voir l’équipe</a>
-        </div>
-      </div>
-    </div>
+    <!-- Bloc cartes côte à côte -->
+<div class="cards-row">
+  <div class="info-card">
+    <h3>👥 <strong>Notre équipe</strong></h3>
+    <p>Découvrez les joueuses et joueurs qui défendent nos couleurs en interclubs.</p>
+    <a class="btn-link" href="equipe.php">Voir l’équipe</a>
+  </div>
 
-    <div class="card shadow-sm mb-3">
-      <div class="card-body d-flex align-items-start">
-        <div class="me-3" style="font-size:22px">🏆</div>
-        <div>
-          <div class="fw-bold mb-1">Détails des matchs</div>
-          <div class="text-muted mb-1">Plongez dans les scores et performances de chaque match de nos journées.</div>
-          <a href="matches.php" class="link">Voir les matchs</a>
-        </div>
-      </div>
-    </div>
+  <div class="info-card">
+    <h3>🏆 <strong>Détails des matchs</strong></h3>
+    <p>Plongez dans les scores et performances de chaque match de nos journées.</p>
+    <a class="btn-link" href="matches.php">Voir les matchs</a>
+  </div>
+</div>
   </section>
 
 </main>

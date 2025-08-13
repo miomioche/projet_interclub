@@ -14,17 +14,14 @@
 
 </head>
 <body>
-  <header class="header bg-dark text-white py-3">
-    <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between">
-      <h1 class="h4 mb-2 mb-md-0">Club InterClubs Badminton – Arras</h1>
-      <nav>
-        <a class="nav-link d-inline-block text-white" href="index.php">Accueil</a>
-        <span class="text-white mx-1">|</span>
-        <a class="nav-link d-inline-block text-white" href="equipe.php">Équipe</a>
-        <span class="text-white mx-1">|</span>
-        <a class="nav-link d-inline-block text-white" href="rencontres.php">Rencontres</a>
-        <span class="text-white mx-1">|</span>
-        <a class="nav-link d-inline-block text-white" href="matches.php">Matches</a>
-      </nav>
-    </div>
-  </header>
+  <header class="header site-header">
+  <div class="container" style="padding:0">
+    <h1>Club InterClubs Badminton – Arras</h1>
+    <nav class="site-nav" aria-label="Navigation principale">
+      <a href="index.php"class="<?= ($current_page === 'index.php') ? 'active' : '' ?>">Accueil</a>
+      <a href="equipe.php" class="<?= ($current_page === 'joueurs.php') ? 'active' : '' ?>">Équipe</a>
+      <a href="rencontres.php" class="<?= ($current_page === 'rencontres.php') ? 'active' : '' ?>">Rencontres</a>
+      <a href="matches.php" class="<?= ($current_page === 'matches.php') ? 'active' : '' ?>">Matchs</a>
+    </nav>
+  </div>
+</header>

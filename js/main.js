@@ -1,4 +1,4 @@
-// Ajoute ceci dans ton main.js ou dans un <script> en bas de page
+
 document.querySelectorAll('a[data-confirm]').forEach(link => {
     link.addEventListener('click', function(e) {
         if (!confirm(this.getAttribute('data-confirm'))) {

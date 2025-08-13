@@ -202,7 +202,29 @@ function render_fixture_line(array $f, array $teamIds): string {
       </div>
     </div>
   </div>
+<!-- Bouton retour en haut -->
+<button id="backToTop" title="Retour en haut">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M4 15l8-8 8 8H4z"/>
+    </svg>
+</button>
 
+<script>
+// Affiche / masque le bouton
+window.onscroll = function() {
+    let btn = document.getElementById("backToTop");
+    if (document.documentElement.scrollTop > 200) {
+        btn.style.display = "flex";
+    } else {
+        btn.style.display = "none";
+    }
+};
+
+// Scroll vers le haut
+document.getElementById("backToTop").onclick = function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+</script>
   <!-- Classement (visuel amélioré) -->
   <div class="card shadow-sm mt-4 card-standings">
     <div class="card-body">
