@@ -53,6 +53,7 @@ foreach ($rows as $r) {
     'res'=>$r['resultat'] ?: '',
   ];
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">

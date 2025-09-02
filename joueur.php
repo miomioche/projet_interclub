@@ -242,12 +242,6 @@ foreach ($disciplines as $type=>$label) {
   </div>
 
   <!-- Faits marquants -->
-  <div class="highlights">
-    <div class="chip"><span>W%</span><strong><?= $winrate ?>%</strong></div>
-    <div class="chip"><span>Série+</span><strong><?= $bestStreak ?> V</strong></div>
-    <div class="chip"><span>Série−</span><strong><?= $worstStreak ?> D</strong></div>
-    <div class="chip"><span>Set marquant</span><strong><?= htmlspecialchars($bestScore) ?></strong></div>
-  </div>
 
   <!-- Statistiques globales -->
   <div class="player-stats" style="max-width:250px;margin:1rem auto;">
@@ -258,6 +252,9 @@ foreach ($disciplines as $type=>$label) {
       <li>Défaites : <?= $defaites ?></li>
       <li>Taux de réussite : <?= $winrateGlobal ?> %</li>
     </ul>
+    <div class="chip"><span> Plus longue série de victoire</span><strong><?= $bestStreak ?> V</strong></div>
+    <div class="chip"><span>Plus longue série de défaites</span><strong><?= $worstStreak ?> D</strong></div>
+    <div class="chip"><span>Set marquant</span><strong><?= htmlspecialchars($bestScore) ?></strong></div>
   </div>
 
   <!-- Camemberts -->

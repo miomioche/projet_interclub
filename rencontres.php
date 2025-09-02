@@ -287,9 +287,15 @@ document.getElementById("backToTop").onclick = function() {
                   <td class="num"><?= (int)$row['bonus'] ?></td>
                   <td class="num"><?= (int)$row['penalites'] ?></td>
                   <td class="num td-points"><?= (int)$row['points'] ?></td>
-                  <td class="num"><?= $chip($row['matchs_diff']) ?></td>
-                  <td class="num"><?= $chip($row['sets_diff']) ?></td>
-                  <td class="num"><?= $chip($row['pts_diff']) ?></td>
+                  <td class="<?= ((int)$row['matchs_diff'] > 0) ? 'diff-pos' : (((int)$row['matchs_diff'] < 0) ? 'diff-neg' : 'diff-zero') ?>">
+  <?= (int)$row['matchs_diff'] ?>
+</td>
+<td class="<?= ((int)$row['sets_diff'] > 0) ? 'diff-pos' : (((int)$row['sets_diff'] < 0) ? 'diff-neg' : 'diff-zero') ?>">
+  <?= (int)$row['sets_diff'] ?>
+</td>
+<td class="<?= ((int)$row['pts_diff'] > 0) ? 'diff-pos' : (((int)$row['pts_diff'] < 0) ? 'diff-neg' : 'diff-zero') ?>">
+  <?= (int)$row['pts_diff'] ?>
+</td>
                 </tr>
               <?php endforeach; ?>
             </tbody>
