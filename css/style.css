@@ -265,7 +265,7 @@ a:hover{ text-decoration:underline; }
    ========================================================================== */
 .team-table{ width:100%; border-collapse:collapse; margin:2rem 0; background:#fff; border-radius:8px; overflow:hidden; box-shadow:var(--shadow); }
 .team-table thead th{ background:var(--brand-blue); color:#fff; padding:12px; text-align:left; }
-.team-table th,.team-table td{ padding:12px; border:1px solid #ddd; vertical-align:middle; }
+.team-table th,.team-table td{ padding:12px;text-align: center; border:1px solid #ddd; vertical-align:middle; }
 .team-table tbody tr:nth-child(even){ background:#f9f9f9; }
 .team-table tbody tr:hover{ background:#f2f7ff; }
 .team-table .rank{ width:8%; font-weight:700; color:#0f1e30; text-align:center; }
@@ -281,11 +281,27 @@ a:hover{ text-decoration:underline; }
   .team-table thead{ display:none; }
   .team-table, .team-table tbody, .team-table tr, .team-table td{ display:block; width:100%; }
   .team-table tr{ margin-bottom:1.5rem; background:#fff; border-radius:8px; overflow:hidden; box-shadow:var(--shadow); }
-  .team-table td{ position:relative; padding:12px 1rem 12px 45%; text-align:right; border:none; border-bottom:1px solid #eee; }
+  .team-table td{ position:relative; padding:12px 1rem 12px 45%;  border:none; border-bottom:1px solid #eee; }
   .team-table td::before{ content:attr(data-label); position:absolute; left:1rem; top:50%; transform:translateY(-50%); font-weight:700; color:var(--brand-blue); }
   .team-table .player-cell img{ width:56px; height:56px; }
 }
-
+/* ===== Scroll horizontal doux pour les tableaux larges (mobile) ===== */
+.table-scroll{
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;   /* inertie iOS/Android */
+  scrollbar-width: thin;               /* Firefox */
+}
+.table-scroll > table{
+  min-width: 640px;                    /* force une largeur > écran pour activer le scroll */
+  border-collapse: collapse;
+}
+.table-scroll::-webkit-scrollbar{ height: 8px; }
+.table-scroll::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.2); border-radius: 999px;
+}
+.fab { pointer-events: auto; }
+.table-scroll { padding-bottom: 6px; } /* petit espace pour ne pas frotter le FAB */
 /* ==========================================================================  
    PAGE JOUEUR
    ========================================================================== */

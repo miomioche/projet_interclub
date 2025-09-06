@@ -1,42 +1,49 @@
 <?php
-require __DIR__ . '/includes/db.php';
 
+
+
+// 1) Charger la connexion PDO une seule fois
+require_once __DIR__ . '/includes/db.php';
+
+// 2) Sécurité : vérifier que $pdo existe bien
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    die('Connexion DB non initialisée');
+}
 // === Réglages ===
 $TEAM_ID = 1; // id de BCA 6 dans ta table teams (à ajuster si besoin)
 
 // === Requêtes ===
-// Prochaine rencontre
+// === Prochaine rencontre ===
 $sql_next = "
-  SELECT f.*, th.short_name AS home_short, ta.short_name AS away_short,
-         th.name AS home_name, ta.name AS away_name
-  FROM fixtures f
-  JOIN teams th ON th.id = f.home_team_id
-  JOIN teams ta ON ta.id = f.away_team_id
-  WHERE (f.home_team_id = :tid OR f.away_team_id = :tid)
-    AND f.status = 'scheduled'
-  ORDER BY f.date_time ASC
-  LIMIT 1
+SELECT f.*, th.short_name AS home_short, ta.short_name AS away_short,
+       th.name AS home_name, ta.name AS away_name
+FROM fixtures f
+JOIN teams th ON th.id = f.home_team_id
+JOIN teams ta ON ta.id = f.away_team_id
+WHERE (f.home_team_id = :tid1 OR f.away_team_id = :tid2)
+  AND f.status = 'scheduled'
+ORDER BY f.date_time ASC
+LIMIT 1
 ";
 $st = $pdo->prepare($sql_next);
-$st->execute(['tid' => $TEAM_ID]);
+$st->execute(['tid1' => $TEAM_ID, 'tid2' => $TEAM_ID]);
 $next_match = $st->fetch(PDO::FETCH_ASSOC);
 
-// Dernier résultat
+// === Dernier résultat ===
 $sql_last = "
-  SELECT f.*, th.short_name AS home_short, ta.short_name AS away_short,
-         th.name AS home_name, ta.name AS away_name
-  FROM fixtures f
-  JOIN teams th ON th.id = f.home_team_id
-  JOIN teams ta ON ta.id = f.away_team_id
-  WHERE (f.home_team_id = :tid OR f.away_team_id = :tid)
-    AND f.status = 'played'
-  ORDER BY f.date_time DESC
-  LIMIT 1
+SELECT f.*, th.short_name AS home_short, ta.short_name AS away_short,
+       th.name AS home_name, ta.name AS away_name
+FROM fixtures f
+JOIN teams th ON th.id = f.home_team_id
+JOIN teams ta ON ta.id = f.away_team_id
+WHERE (f.home_team_id = :tid1 OR f.away_team_id = :tid2)
+  AND f.status = 'played'
+ORDER BY f.date_time DESC
+LIMIT 1
 ";
 $st = $pdo->prepare($sql_last);
-$st->execute(['tid' => $TEAM_ID]);
+$st->execute(['tid1' => $TEAM_ID, 'tid2' => $TEAM_ID]);
 $last_result = $st->fetch(PDO::FETCH_ASSOC);
-
 // Choix du bloc principal à afficher
 $primary     = $next_match ?: $last_result;
 $isUpcoming  = !empty($next_match);

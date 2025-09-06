@@ -2,10 +2,10 @@
 declare(strict_types=1);
 
 // ===== PROD (OVH) =====
-const DB_HOST = 'bcaintmiochce.mysql.db';   // vu dans ton phpMyAdmin
-const DB_NAME = 'bcaintmiochce';            // le nom de la base (généralement identique à l'user)
-const DB_USER = 'bcaintmiochce';            // ton utilisateur (même nom que la base sur OVH)
-const DB_PASS = 'Leelitdansmonlit1';         // celui que tu as choisi ou réinitialisé
+const DB_HOST = 'bcaintnmioche.mysql.db';
+const DB_NAME = 'bcaintnmioche';
+const DB_USER = 'bcaintnmioche';
+const DB_PASS = 'Yawarakaihun08';
 
 // ===== DEV (local) =====
 const DEV_HOST = '127.0.0.1';
@@ -32,10 +32,13 @@ try {
         PDO::ATTR_EMULATE_PREPARES   => false,
     ]);
 } catch (PDOException $e) {
-    if ($isDev) {
-        die('Erreur de connexion DB: ' . $e->getMessage());
-    }
-    error_log('DB CONNECT ERROR: ' . $e->getMessage());
-    http_response_code(500);
-    exit('Erreur serveur.');
+  // Mode debug si on ajoute ?debug=1 dans l’URL
+  if ($isDev || (isset($_GET['debug']) && $_GET['debug'] == '1')) {
+    die('DB ERROR: ' . htmlspecialchars($e->getMessage()));
+  }
+
+  // Sinon, comportement normal (prod)
+  error_log('DB CONNECT ERROR: ' . $e->getMessage());
+  http_response_code(500);
+  exit('Erreur serveur.');
 }
