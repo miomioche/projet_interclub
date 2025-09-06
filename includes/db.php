@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-// ===== PROD (OVH) — RENSEIGNE ICI =====
-const DB_HOST = 'bcaintn.mysql.db';
-const DB_NAME = 'bcaintn';
-const DB_USER = 'bcaintn';
-const DB_PASS = 'Leelitdansmonlit1!';
+// ===== PROD (OVH) =====
+const DB_HOST = 'bcaintmiochce.mysql.db';   // vu dans ton phpMyAdmin
+const DB_NAME = 'bcaintmiochce';            // le nom de la base (généralement identique à l'user)
+const DB_USER = 'bcaintmiochce';            // ton utilisateur (même nom que la base sur OVH)
+const DB_PASS = 'Leelitdansmonlit1';         // celui que tu as choisi ou réinitialisé
 
 // ===== DEV (local) =====
 const DEV_HOST = '127.0.0.1';
