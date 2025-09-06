@@ -136,7 +136,7 @@ function dt_fr($ts){ return date('d/m/Y \à H\hi', strtotime($ts)); }
           <span class="emoji">👥</span>
           <strong>Notre équipe</strong>
         </div>
-        <p class="muted">Découvrez les joueuses et joueurs qui défendent nos couleurs en interclubs.</p>
+        <p class="muted">Découvrez les joueuses et joueurs qui défendent nos couleurs.</p>
         <a href="equipe.php" class="btn btn-primary">Voir l’équipe</a>
       </div>
     </div>

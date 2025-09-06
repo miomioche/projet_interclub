@@ -2,9 +2,7 @@
 declare(strict_types=1);
 require __DIR__ . '/includes/db.php';
 
-/* ───────────────────────────────────────────────────────────
-   1) Joueur
-   ─────────────────────────────────────────────────────────── */
+/* 1) Joueur */
 $joueurId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($joueurId <= 0) { header('Location: equipe.php'); exit; }
 
@@ -20,11 +18,7 @@ if (!$joueur) { header('Location: equipe.php'); exit; }
 
 $fullName = trim(($joueur['prenom'] ?? '') . ' ' . ($joueur['nom'] ?? ''));
 
-/* ───────────────────────────────────────────────────────────
-   2) Helpers SQL (sans COLLATE, comparaisons via LOWER(TRIM()))
-   ─────────────────────────────────────────────────────────── */
-
-/** Pastilles depuis la vue v_match_details_for_stats (doit contenir: id, joueur_id, resultat, date_match) */
+/* 2) Helpers SQL (inchangés) */
 function getFormeJoueur(PDO $pdo, int $joueurId, int $n = 10): array {
   $sql = "
     SELECT v.id AS detail_id, v.resultat, v.date_match
@@ -52,13 +46,11 @@ function getFormeJoueur(PDO $pdo, int $joueurId, int $n = 10): array {
   }
 }
 
-/** Sous-requête UNION (joueur + quand il est binôme) pour match_details (rich fields) */
 function unionMatchDetailsSQL(): string {
   return "
     SELECT id, joueur_id, type_match, resultat, date_match, score, lieu, nom_adversaire, binome
     FROM match_details
     WHERE joueur_id = :id
-
     UNION ALL
     SELECT id, :id AS joueur_id, type_match, resultat, date_match, score, lieu, nom_adversaire, binome
     FROM match_details
@@ -67,7 +59,6 @@ function unionMatchDetailsSQL(): string {
   ";
 }
 
-/** Tous les matchs “riches” */
 function fetchAllMatchesFull(PDO $pdo, int $id, string $bn): array {
   $sql = unionMatchDetailsSQL() . " ORDER BY date_match DESC";
   $st = $pdo->prepare($sql);
@@ -75,7 +66,6 @@ function fetchAllMatchesFull(PDO $pdo, int $id, string $bn): array {
   return $st->fetchAll(PDO::FETCH_ASSOC);
 }
 
-/** N derniers “riches” */
 function fetchLastNMatches(PDO $pdo, int $id, string $bn, int $n = 5): array {
   $sql = unionMatchDetailsSQL() . " ORDER BY date_match DESC LIMIT :n";
   $st = $pdo->prepare($sql);
@@ -86,7 +76,6 @@ function fetchLastNMatches(PDO $pdo, int $id, string $bn, int $n = 5): array {
   return $st->fetchAll(PDO::FETCH_ASSOC);
 }
 
-/** Dernier & Prochain */
 function fetchLastMatch(PDO $pdo, int $id, string $bn): ?array {
   $sql = unionMatchDetailsSQL() . " AND date_match < NOW() ORDER BY date_match DESC LIMIT 1";
   $st = $pdo->prepare($sql);
@@ -94,6 +83,7 @@ function fetchLastMatch(PDO $pdo, int $id, string $bn): ?array {
   $r = $st->fetch(PDO::FETCH_ASSOC);
   return $r ?: null;
 }
+
 function fetchNextMatch(PDO $pdo, int $id, string $bn): ?array {
   $sql = unionMatchDetailsSQL() . " AND date_match >= NOW() ORDER BY date_match ASC LIMIT 1";
   $st = $pdo->prepare($sql);
@@ -102,7 +92,6 @@ function fetchNextMatch(PDO $pdo, int $id, string $bn): ?array {
   return $r ?: null;
 }
 
-/** Partenaires préférés (jamais soi-même) */
 function fetchTopPartners(PDO $pdo, int $id, string $bn, int $n=3): array {
   $sql = "
     SELECT partenaire, SUM(resultat='victoire') AS v, SUM(resultat='défaite') AS d, COUNT(*) total
@@ -135,32 +124,32 @@ function fetchTopPartners(PDO $pdo, int $id, string $bn, int $n=3): array {
   return $st->fetchAll(PDO::FETCH_ASSOC);
 }
 
-/* ───────────────────────────────────────────────────────────
-   3) Données pour la page
-   ─────────────────────────────────────────────────────────── */
-$formeData = getFormeJoueur($pdo, $joueurId, 10);
+/* 3) Données pour la page */
+$formeData    = getFormeJoueur($pdo, $joueurId, 10);
 $formeTooltip = implode('', array_map(fn($it)=>$it['code']==='w'?'V':($it['code']==='l'?'D':'-'), $formeData));
 
 $all       = fetchAllMatchesFull($pdo, $joueurId, $fullName);
 $last5     = fetchLastNMatches($pdo, $joueurId, $fullName, 5);
 $partners  = fetchTopPartners($pdo, $joueurId, $fullName, 3);
 $lastMatch = fetchLastMatch($pdo, $joueurId, $fullName);
-// Prochain match (futur uniquement)
+
+/* Prochain match (format jj/mm/aaaa HH:ii) */
 $nextMatch = $pdo->prepare("
-    SELECT *, STR_TO_DATE(date_match, '%d/%m/%Y %H:%i') AS dt_norm
-    FROM match_details
-    WHERE (joueur_id = :id OR LOWER(TRIM(binome)) = LOWER(TRIM(:fullname)))
-      AND STR_TO_DATE(date_match, '%d/%m/%Y %H:%i') >= NOW()
-    ORDER BY dt_norm ASC
-    LIMIT 1
+  SELECT *, STR_TO_DATE(date_match, '%d/%m/%Y %H:%i') AS dt_norm
+  FROM match_details
+  WHERE (joueur_id = :id OR LOWER(TRIM(binome)) = LOWER(TRIM(:fullname)))
+    AND STR_TO_DATE(date_match, '%d/%m/%Y %H:%i') >= NOW()
+  ORDER BY dt_norm ASC
+  LIMIT 1
 ");
 $nextMatch->execute([':id'=>$joueurId, ':fullname'=>$fullName]);
 $nextMatch = $nextMatch->fetch();
+
 /* Faits marquants */
 $totalJoues = count($all);
 $wins  = array_sum(array_map(fn($m)=>mb_strtolower($m['resultat'],'UTF-8')==='victoire', $all));
 $loss  = array_sum(array_map(fn($m)=>in_array(mb_strtolower($m['resultat'],'UTF-8'), ['défaite','defaite'], true), $all));
-$winrate = $totalJoues ? round($wins*100/$totalJoues, 1) : 0.0;
+$winrate = $totalJoues ? round($wins*100/$totalJoues, 0) : 0;
 
 $bestStreak = 0; $worstStreak = 0; $cur=0; $curType=0;
 foreach ($all as $m) {
@@ -170,9 +159,13 @@ foreach ($all as $m) {
   if ($curType === -1) $worstStreak = max($worstStreak, $cur);
 }
 $bestScore = '—';
-foreach ($all as $m) { if (!empty($m['score']) && mb_strtolower($m['resultat'],'UTF-8')==='victoire') { $bestScore = $m['score']; break; } }
+foreach ($all as $m) {
+  if (!empty($m['score']) && mb_strtolower($m['resultat'],'UTF-8')==='victoire') {
+    $bestScore = $m['score']; break;
+  }
+}
 
-/* Stats globales et par discipline via la vue (agrégats) */
+/* Stats via la vue */
 $st = $pdo->prepare("
   SELECT COUNT(*) AS total,
          SUM(resultat='victoire') AS victoires,
@@ -182,10 +175,10 @@ $st = $pdo->prepare("
 ");
 $st->execute([':id'=>$joueurId]);
 $g = $st->fetch(PDO::FETCH_ASSOC) ?: ['total'=>0,'victoires'=>0,'defaites'=>0];
-$total     = (int)$g['total'];
-$victoires = (int)$g['victoires'];
-$defaites  = (int)$g['defaites'];
-$winrateGlobal = $total ? round($victoires/$total*100,1) : 0;
+$total          = (int)$g['total'];
+$victoires      = (int)$g['victoires'];
+$defaites       = (int)$g['defaites'];
+$winrateGlobal  = $total ? round($victoires/$total*100,0) : 0;
 
 $disciplines = ['simple'=>'Simple','double'=>'Double','mixte'=>'Mixte'];
 $statsDisc = [];
@@ -199,194 +192,307 @@ foreach ($disciplines as $type=>$label) {
   $r = $sth->fetch(PDO::FETCH_ASSOC) ?: ['v'=>0,'d'=>0];
   $statsDisc[$type] = ['label'=>$label,'victoires'=>(int)$r['v'],'defaites'=>(int)$r['d']];
 }
+
+/* Sous-titre section “5 derniers matchs” : date la plus ancienne */
+$subtitleOldest = '';
+if (!empty($last5)) {
+  $ds = array_map(fn($m)=>strtotime($m['date_match']), $last5);
+  $min = min($ds);
+  $subtitleOldest = date('d/m/Y', $min);
+}
+
+/* Compteurs par format pour les filtres */
+$cntAll = count($last5);
+$cntSimple = $cntDouble = $cntMixte = 0;
+foreach ($last5 as $m) {
+  $t = mb_strtolower($m['type_match'],'UTF-8');
+  if ($t==='simple') $cntSimple++;
+  elseif ($t==='double') $cntDouble++;
+  elseif ($t==='mixte')  $cntMixte++;
+}
+
+/* Filtre sélectionné via URL (?t=simple|double|mixte|all) */
+$filterFromUrl = isset($_GET['t']) ? mb_strtolower(trim($_GET['t']), 'UTF-8') : 'all';
+if (!in_array($filterFromUrl, ['all','simple','double','mixte'], true)) $filterFromUrl = 'all';
+
+/* helper */
+$e = fn($s)=>htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Profil de <?= htmlspecialchars($joueur['prenom'].' '.$joueur['nom']) ?></title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <title>Profil de <?= $e(($joueur['prenom'] ?? '').' '.($joueur['nom'] ?? '')) ?></title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 <body>
 <?php include __DIR__.'/includes/header.php'; ?>
 
-<main class="container">
-  <div class="player-profile">
-    <img src="img/joueurs/<?= htmlspecialchars($joueur['photo']) ?>" alt="Photo de <?= htmlspecialchars($joueur['prenom']) ?>" class="photo-profil">
-    <h1><?= htmlspecialchars(strtoupper($joueur['nom'])) ?> <?= htmlspecialchars($joueur['prenom']) ?></h1>
+<!-- HERO joueur -->
+<section class="player-hero">
+  <img class="photo-profil" src="img/joueurs/<?= $e($joueur['photo']) ?>"
+       alt="Photo de <?= $e($joueur['prenom'].' '.$joueur['nom']) ?>" loading="lazy">
+  <div class="player-hero-text">
+    <h1><?= $e(strtoupper($joueur['nom']).' '.$joueur['prenom']) ?></h1>
 
-    <!-- Pastilles cliquables vers matches.php -->
-    <div class="player-forme" title="<?= htmlspecialchars($formeTooltip) ?>">
+    <div class="player-forme" title="<?= $e($formeTooltip) ?>">
       <span class="label">Forme&nbsp;:</span>
       <div class="streak">
         <?php foreach ($formeData as $it): ?>
           <?php if (!empty($it['detail_id'])): ?>
             <a class="pastille-link" href="matches.php?match_id=<?= (int)$it['detail_id'] ?>#row-m<?= (int)$it['detail_id'] ?>">
-              <span class="<?= htmlspecialchars($it['code']) ?>"></span>
+              <span class="<?= $e($it['code']) ?>"></span>
             </a>
           <?php else: ?>
-            <span class="<?= htmlspecialchars($it['code']) ?>"></span>
+            <span class="<?= $e($it['code']) ?>"></span>
           <?php endif; ?>
         <?php endforeach; ?>
       </div>
     </div>
 
-    <!-- Classements -->
-    <ul class="classements">
-      <li><strong>Simple :</strong> <?= htmlspecialchars($joueur['classement_simple']) ?></li>
-      <li><strong>Double :</strong> <?= htmlspecialchars($joueur['classement_double']) ?></li>
-      <li><strong>Mixte :</strong> <?= htmlspecialchars($joueur['classement_mixte']) ?></li>
-    </ul>
+    <p class="hero-tags">
+      <?php if (!empty($joueur['classement_simple'])): ?>
+        <span>Simple <?= $e($joueur['classement_simple']) ?></span>
+      <?php endif; ?>
+      <?php if (!empty($joueur['classement_double'])): ?>
+        <span>Double <?= $e($joueur['classement_double']) ?></span>
+      <?php endif; ?>
+      <?php if (!empty($joueur['classement_mixte'])): ?>
+        <span>Mixte <?= $e($joueur['classement_mixte']) ?></span>
+      <?php endif; ?>
+    </p>
   </div>
+</section>
 
-  <!-- Faits marquants -->
+<!-- LAYOUT 2 colonnes -->
+<section class="player-layout">
 
-  <!-- Statistiques globales -->
-  <div class="player-stats" style="max-width:250px;margin:1rem auto;">
-    <h3>Statistiques globales</h3>
-    <ul>
-      <li>Total de matches : <?= $total ?></li>
-      <li>Victoires : <?= $victoires ?></li>
-      <li>Défaites : <?= $defaites ?></li>
-      <li>Taux de réussite : <?= $winrateGlobal ?> %</li>
-    </ul>
-    <div class="chip"><span> Plus longue série de victoire</span><strong><?= $bestStreak ?> V</strong></div>
-    <div class="chip"><span>Plus longue série de défaites</span><strong><?= $worstStreak ?> D</strong></div>
-    <div class="chip"><span>Set marquant</span><strong><?= htmlspecialchars($bestScore) ?></strong></div>
-  </div>
+  <!-- Sidebar sticky -->
+  <aside class="player-aside">
+    <div class="player-stats card" aria-labelledby="stats-globales-title">
+      <h3 id="stats-globales-title">Statistiques globales</h3>
+      <ul>
+        <li>Total de matches : <?= $total ?></li>
+        <li>Victoires : <?= $victoires ?></li>
+        <li>Défaites : <?= $defaites ?></li>
+      </ul>
 
-  <!-- Camemberts -->
-  <h3 class="section-title">ratio victoires / défaites</h3>
-  <div class="stat-charts">
-    <?php foreach ($statsDisc as $type => $sd): ?>
-      <div>
-        <canvas id="<?= $type ?>Chart" width="200" height="200"></canvas>
-        <p><strong><?= $sd['label'] ?></strong></p>
+      <!-- jauge winrate -->
+      <div class="winrate-wrap" aria-label="Taux de réussite global">
+        <div class="winrate-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?= $winrateGlobal ?>">
+          <div class="winrate-fill" style="--p: <?= (int)$winrateGlobal ?>%"></div>
+        </div>
+        <div class="winrate-label"><strong><?= $winrateGlobal ?>%</strong> de victoires</div>
       </div>
-    <?php endforeach; ?>
-  </div>
 
-  <!-- 5 derniers matchs -->
-  <h3 class="section-title">5 derniers matchs</h3>
-  <table class="last-matches">
-    <thead>
-      <tr><th>Date</th><th>Adversaire</th><th>Format</th><th>Score</th><th>Résultat</th></tr>
-    </thead>
-    <tbody>
-      <?php foreach ($last5 as $m): ?>
-        <?php $isWin = (mb_strtolower($m['resultat'],'UTF-8')==='victoire'); ?>
-        <tr class="<?= $isWin ? 'row-win' : 'row-loss' ?>">
-          <td><?= date('d/m/Y H:i', strtotime($m['date_match'])) ?></td>
-          <td><?= htmlspecialchars($m['nom_adversaire'] ?: '—') ?></td>
-          <td><?= ucfirst($m['type_match']) ?></td>
-          <td><?= htmlspecialchars($m['score'] ?: '—') ?></td>
-          <td><span class="<?= $isWin ? 'badge-win' : 'badge-loss' ?>"><?= $isWin ? 'V' : 'D' ?></span></td>
-        </tr>
-      <?php endforeach; if (empty($last5)): ?>
-        <tr><td colspan="5" style="text-align:center;">Aucun match</td></tr>
-      <?php endif; ?>
-    </tbody>
-  </table>
+      <div class="chip"><span>Plus longue série de victoire</span><strong><?= $bestStreak ?> V</strong></div>
+      <div class="chip"><span>Plus longue série de défaites</span><strong><?= $worstStreak ?> D</strong></div>
+      <div class="chip"><span>Set marquant</span><strong><?= $e($bestScore) ?></strong></div>
+    </div>
 
-  <!-- Partenaires -->
-  <h3 class="section-title">Partenaires préférés</h3>
-  <table class="partners-table">
-    <thead><tr><th>Partenaire</th><th>Bilan</th><th>%</th></tr></thead>
-    <tbody>
-      <?php foreach ($partners as $p):
-        $pct = $p['total'] ? round($p['v']*100/$p['total']) : 0; ?>
-        <tr>
-          <td><?= htmlspecialchars($p['partenaire'] ?: '—') ?></td>
-          <td><?= (int)$p['v'] ?>-<?= (int)$p['d'] ?></td>
-          <td><?= $pct ?>%</td>
-        </tr>
-      <?php endforeach; if (empty($partners)): ?>
-        <tr><td colspan="3" style="text-align:center;">—</td></tr>
-      <?php endif; ?>
-    </tbody>
-  </table>
-
-  <!-- Dernier / Prochain -->
-  <div class="match-blocks">
-    <div class="match-card">
+    <div class="match-card card">
       <h3>Dernier match</h3>
-      <?php if ($lastMatch): ?>
+      <?php if ($lastMatch): $isW = (mb_strtolower($lastMatch['resultat'],'UTF-8')==='victoire'); ?>
         <p><strong>Date :</strong> <?= date('d/m/Y H:i', strtotime($lastMatch['date_match'])) ?></p>
-        <p><strong>Adversaire :</strong> <?= htmlspecialchars($lastMatch['nom_adversaire'] ?: '—') ?></p>
-        <p><strong>Type :</strong> <?= htmlspecialchars($lastMatch['type_match']) ?></p>
-        <p><strong>Score :</strong> <?= htmlspecialchars($lastMatch['score'] ?: '—') ?></p>
+        <p><strong>Adversaire :</strong> <?= $e($lastMatch['nom_adversaire'] ?: '—') ?></p>
+        <p><strong>Type :</strong> <?= $e($lastMatch['type_match']) ?></p>
+        <p><strong>Score :</strong> <?= $e($lastMatch['score'] ?: '—') ?></p>
         <p><strong>Résultat :</strong>
-          <span class="<?= (mb_strtolower($lastMatch['resultat'],'UTF-8')==='victoire')?'victoire':'defaite' ?>">
-            <?= ucfirst($lastMatch['resultat']) ?>
-          </span>
+          <span class="<?= $isW ? 'badge-win' : 'badge-loss' ?>"><?= $isW ? 'V' : 'D' ?></span>
         </p>
-        <p><strong>Lieu :</strong> <?= htmlspecialchars($lastMatch['lieu'] ?: '—') ?></p>
+        <p><strong>Lieu :</strong> <?= $e($lastMatch['lieu'] ?: '—') ?></p>
       <?php else: ?>
-        <p>Aucun match passé trouvé.</p>
+        <p>Pas encore de match joué.</p>
       <?php endif; ?>
     </div>
-    <div class="match-card">
+
+    <div class="match-card card">
       <h3>Prochain match</h3>
       <?php if ($nextMatch): ?>
         <p><strong>Date :</strong> <?= date('d/m/Y H:i', strtotime($nextMatch['date_match'])) ?></p>
-        <p><strong>Adversaire :</strong> <?= htmlspecialchars($nextMatch['nom_adversaire'] ?: '—') ?></p>
-        <p><strong>Type :</strong> <?= htmlspecialchars($nextMatch['type_match']) ?></p>
-        <p><strong>Lieu :</strong> <?= htmlspecialchars($nextMatch['lieu'] ?: '—') ?></p>
+        <p><strong>Adversaire :</strong> <?= $e($nextMatch['nom_adversaire'] ?: '—') ?></p>
+        <p><strong>Type :</strong> <?= $e($nextMatch['type_match']) ?></p>
+        <p><strong>Lieu :</strong> <?= $e($nextMatch['lieu'] ?: '—') ?></p>
       <?php else: ?>
         <p>Aucun match programmé.</p>
       <?php endif; ?>
     </div>
-  </div>
+  </aside>
 
-  <p style="text-align:center;margin-top:1rem;"><a href="equipe.php">← Retour à l’équipe</a></p>
-</main>
+  <!-- Colonne principale -->
+  <div class="player-main">
+    <h3 class="section-title">📊 Ratio victoires / défaites</h3>
+    <div class="stat-charts">
+      <?php foreach ($statsDisc as $type => $sd): ?>
+        <div class="card chart-card">
+          <div class="chart-wrap">
+            <canvas id="<?= $type ?>Chart" width="220" height="220" aria-label="Camembert <?= $e($sd['label']) ?>"></canvas>
+          </div>
+          <p><strong><?= $e($sd['label']) ?></strong></p>
+        </div>
+      <?php endforeach; ?>
+    </div>
+    <div class="chart-legend" aria-hidden="true">
+      <span class="dot dot-win"></span> Victoires
+      <span class="dot dot-space"></span>
+      <span class="dot dot-loss"></span> Défaites
+    </div>
+
+    <h3 class="section-title">🗓️ 5 derniers matchs</h3>
+    
+
+    <!-- Filtres -->
+    <div class="table-tools">
+      <div class="filters" role="tablist" aria-label="Filtrer les matchs">
+        <a class="filter-btn<?= $filterFromUrl==='all'?' is-active':'' ?>"    href="?id=<?= (int)$joueurId ?>&t=all"    data-filter="all">Tous (<?= $cntAll ?>)</a>
+        <a class="filter-btn<?= $filterFromUrl==='simple'?' is-active':'' ?>" href="?id=<?= (int)$joueurId ?>&t=simple" data-filter="simple">Simple (<?= $cntSimple ?>)</a>
+        <a class="filter-btn<?= $filterFromUrl==='double'?' is-active':'' ?>" href="?id=<?= (int)$joueurId ?>&t=double" data-filter="double">Double (<?= $cntDouble ?>)</a>
+        <a class="filter-btn<?= $filterFromUrl==='mixte'?' is-active':'' ?>"  href="?id=<?= (int)$joueurId ?>&t=mixte"  data-filter="mixte">Mixte (<?= $cntMixte ?>)</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <table class="last-matches">
+        <thead>
+          <tr>
+            <th>Date</th><th>Adversaire</th><th>Format</th><th>Score</th><th>Lieu</th><th>Résultat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if (!empty($last5)): foreach ($last5 as $m):
+            $isWin = (mb_strtolower($m['resultat'],'UTF-8')==='victoire');
+            $rowType = mb_strtolower($m['type_match'],'UTF-8'); ?>
+            <tr class="<?= $isWin ? 'row-win' : 'row-loss' ?>" data-type="<?= $e($rowType) ?>">
+              <td class="date-cell">
+                <?php if (!empty($m['id'])): ?>
+                  <a class="row-link" href="matches.php?match_id=<?= (int)$m['id'] ?>#row-m<?= (int)$m['id'] ?>">
+                    <?= date('d/m/Y H:i', strtotime($m['date_match'])) ?>
+                  </a>
+                <?php else: ?>
+                  <?= date('d/m/Y H:i', strtotime($m['date_match'])) ?>
+                <?php endif; ?>
+              </td>
+              <td><?= $e($m['nom_adversaire'] ?: '—') ?></td>
+              <td><?= ucfirst($m['type_match']) ?></td>
+              <td><?= $e($m['score'] ?: '—') ?></td>
+              <td><?= $e($m['lieu'] ?: '—') ?></td>
+              <td><span class="<?= $isWin ? 'badge-win' : 'badge-loss' ?>" title="<?= $isWin?'Victoire':'Défaite' ?>"><?= $isWin ? 'V' : 'D' ?></span></td>
+            </tr>
+          <?php endforeach; else: ?>
+            <tr><td colspan="6" class="empty-state">Aucun match pour l’instant. Planifie un match, il s’affichera ici 👇</td></tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+
+      <!-- Version cartes (mobile) -->
+      <div class="matches-cards">
+        <?php if (!empty($last5)): foreach ($last5 as $m):
+          $isWin = (mb_strtolower($m['resultat'],'UTF-8')==='victoire');
+          $rowType = mb_strtolower($m['type_match'],'UTF-8'); ?>
+          <article class="match-card-item" data-type="<?= $e($rowType) ?>">
+            <header>
+              <span class="badge <?= $isWin ? 'badge-win' : 'badge-loss' ?>"><?= $isWin ? 'V' : 'D' ?></span>
+              <time><?= date('d/m/Y H:i', strtotime($m['date_match'])) ?></time>
+            </header>
+            <p><strong>Adversaire :</strong> <?= $e($m['nom_adversaire'] ?: '—') ?></p>
+            <p><strong>Format :</strong> <?= ucfirst($m['type_match']) ?></p>
+            <p><strong>Score :</strong> <?= $e($m['score'] ?: '—') ?></p>
+            <p><strong>Lieu :</strong> <?= $e($m['lieu'] ?: '—') ?></p>
+            <?php if (!empty($m['id'])): ?>
+              <a class="row-link" href="matches.php?match_id=<?= (int)$m['id'] ?>#row-m<?= (int)$m['id'] ?>">Voir la ligne du match</a>
+            <?php endif; ?>
+          </article>
+        <?php endforeach; else: ?>
+          <div class="empty-state">Aucun match pour l’instant. Planifie un match, il s’affichera ici 👇</div>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <h3 class="section-title">🤝 Partenaires préférés</h3>
+    <div class="card">
+      <table class="partners-table">
+        <thead><tr><th>Partenaire</th><th>Bilan</th><th>%</th></tr></thead>
+        <tbody>
+          <?php if (!empty($partners)): foreach ($partners as $p):
+            $pct = $p['total'] ? round($p['v']*100/$p['total']) : 0; ?>
+            <tr>
+              <td><?= $e($p['partenaire'] ?: '—') ?></td>
+              <td><?= (int)$p['v'] ?>-<?= (int)$p['d'] ?></td>
+              <td><?= $pct ?>%</td>
+            </tr>
+          <?php endforeach; else: ?>
+            <tr><td colspan="3" class="empty-state">Pas encore de partenaire favori.</td></tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 <!-- Bouton retour en haut -->
-<button id="backToTop" title="Retour en haut">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M4 15l8-8 8 8H4z"/>
-    </svg>
+<button id="backToTop" title="Retour en haut" aria-label="Retour en haut">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 15l8-8 8 8H4z"/></svg>
 </button>
 
-<script>
-// Affiche / masque le bouton
-window.onscroll = function() {
-    let btn = document.getElementById("backToTop");
-    if (document.documentElement.scrollTop > 200) {
-        btn.style.display = "flex";
-    } else {
-        btn.style.display = "none";
-    }
-};
-
-// Scroll vers le haut
-document.getElementById("backToTop").onclick = function() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-</script>
 <?php include __DIR__.'/includes/footer.php'; ?>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  Chart.register(ChartDataLabels);
-  const colors = ['#5cb85c','#d9534f'];
+  // Bouton Top
+  const btn = document.getElementById('backToTop');
+  const onScroll = () => (document.documentElement.scrollTop > 200)
+    ? btn.style.display = 'flex'
+    : btn.style.display = 'none';
+  window.addEventListener('scroll', onScroll);
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  onScroll();
 
-  <?php foreach ($statsDisc as $type => $sd): ?>
-  new Chart(document.getElementById('<?= $type ?>Chart'), {
-    type: 'pie',
-    data: { labels: ['Victoires','Défaites'],
-      datasets: [{ data: [<?= $sd['victoires'] ?>, <?= $sd['defaites'] ?>], backgroundColor: colors }] },
-    options: {
-      plugins: { datalabels: {
-        color:'#fff', font:{size:14,weight:'bold'},
-        formatter:(v,ctx)=>{ const s=ctx.dataset.data.reduce((a,b)=>a+b,0)||1; return Math.round(v/s*100)+'%'; }
-      }, legend:{display:false}},
-      layout:{padding:6}
-    },
-    plugins:[ChartDataLabels]
-  });
-  <?php endforeach; ?>
+  // Graphs
+  if (window.Chart && window.ChartDataLabels) {
+    Chart.register(ChartDataLabels);
+    const colors = ['#5cb85c','#d9534f'];
+
+    <?php foreach ($statsDisc as $type => $sd): ?>
+    new Chart(document.getElementById('<?= $type ?>Chart'), {
+      type: 'pie',
+      data: {
+        labels: ['Victoires','Défaites'],
+        datasets: [{ data: [<?= $sd['victoires'] ?>, <?= $sd['defaites'] ?>], backgroundColor: colors }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color:'#fff',
+            font:{size:16, weight:'bold'},
+            // n’affiche la valeur qu’aux arcs les plus grands (lisibilité)
+            formatter: (v, ctx) => {
+              const data = ctx.dataset.data;
+              const sum = data.reduce((a,b)=>a+b,0) || 1;
+              const max = Math.max.apply(null, data);
+              return (v === max) ? Math.round(v/sum*100)+'%' : '';
+            }
+          },
+          legend:{display:false}
+        },
+        layout:{padding:6}
+      },
+      plugins:[ChartDataLabels]
+    });
+    <?php endforeach; ?>
+  }
+
+  // Filtres tableau (garde aussi l’état via ?t=)
+  const rows = document.querySelectorAll('.last-matches tbody tr, .matches-cards .match-card-item');
+  function apply(filter){
+    rows.forEach(tr=>{
+      const t = (tr.getAttribute('data-type')||'').toLowerCase();
+      tr.style.display = (filter==='all' || t===filter) ? '' : 'none';
+    });
+  }
+  const initFilter = (new URLSearchParams(location.search)).get('t') || 'all';
+  apply(initFilter);
 });
 </script>
 </body>

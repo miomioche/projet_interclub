@@ -338,9 +338,202 @@ a:hover{ text-decoration:underline; }
 .badge-win{ background:#e7f7ef; color:#107441; border:1px solid #bde6cf; }
 .badge-loss{ background:#fdebec; color:#b62323; border:1px solid #f5cccc; }
 
+/* =========================================================
+   PAGE JOUEUR — HERO, LAYOUT, SIDEBAR STICKY, CHARTS & TABLES
+   (bloc autonome et dédoublonné)
+   ========================================================= */
+
+/* --- variables de secours (si non définies ailleurs) --- */
+:root{
+  --brand-blue: #1f3b66;
+  --border: #e8ecf1;
+  --shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+
+/* ---------- HERO JOUEUR ---------- */
+.player-hero{
+  position: relative;
+  max-width: 1120px;
+  margin: 18px auto 8px;
+  padding: 22px 18px 14px;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(0,0,0,.06);
+}
+.player-hero .photo-profil{
+  width: 112px; height: 112px; border-radius: 50%;
+  object-fit: cover; border: 3px solid var(--brand-blue);
+  margin: 0 auto 10px;
+}
+.player-hero-text h1{
+  font-size: clamp(22px, 3.6vw, 30px);
+  margin: 0 0 6px;
+}
+.player-hero .hero-tags{
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+  margin: 6px 0 2px; color: #475569;
+}
+.player-hero .hero-tags span{
+  font-weight: 700; font-size: .9rem; color:#27364b;
+  background: #f6f9fc; border: 1px solid var(--border);
+  padding: 6px 10px; border-radius: 999px;
+}
+
+/* ---------- LAYOUT GLOBAL (2 colonnes) ---------- */
+.player-layout{
+  position: relative;
+  max-width: 1120px;
+  margin: 10px auto 24px;
+  padding: 16px;
+  border-radius: 16px;
+  background:
+    radial-gradient(1200px 240px at 50% -40px, rgba(29,58,97,.06), transparent 60%),
+    linear-gradient(180deg, rgba(29,58,97,.05), rgba(29,58,97,.02));
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 26px rgba(0,0,0,.06);
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 18px;
+}
+
+/* ---------- SIDEBAR (cartes, sticky desktop) ---------- */
+.player-aside{
+   top: 92px;        /* ajuste selon la hauteur du header */
+  align-self: start;
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.player-aside .card,
+.player-aside .player-stats{
+  background:#fff; border:1px solid var(--border);
+  border-radius:12px; box-shadow:var(--shadow); padding:1rem;
+}
+.player-aside h3{ margin:0 0 8px; font-size:1rem; }
+.player-aside p{ line-height:1.35; }
+
+/* ---------- COLONNE DROITE (grandes cartes) ---------- */
+.player-main > *{ margin-bottom: 14px; }
+.player-main .card{
+  background:#fff; border:1px solid var(--border);
+  border-radius:12px; box-shadow:var(--shadow); padding:1rem;
+}
+
+/* ---------- CHARTS (camemberts) ---------- */
+.stat-charts{
+  display: grid; gap: 18px;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+}
+.chart-card{ padding:12px; text-align:center; }
+.chart-wrap{ position:relative; width:min(240px, 100%); margin:0 auto; }
+
+/* Légende */
+.chart-legend{
+  display:flex; align-items:center; justify-content:center;
+  gap:14px; font-size:.95rem; color:#455468; margin:6px 0 12px;
+}
+.chart-legend .dot{ width:12px; height:12px; border-radius:50%; display:inline-block; transform: translateY(1px); border:1px solid rgba(0,0,0,.08); }
+.dot-win{ background:#5cb85c; }
+.dot-loss{ background:#d9534f; }
+.dot-space{ width:18px; height:1px; background:transparent; }
+
+/* Sous-titre de section */
+.section-subtitle{ margin:-6px 0 10px; color:#64748b; font-size:.95rem; text-align:left; }
+
+/* ---------- TABLES (derniers matchs / partenaires) ---------- */
+.player-main table{ width:100%; border-collapse: separate; border-spacing:0; }
+.player-main .last-matches,
+.player-main .partners-table{ overflow:hidden; }
+
+.player-main .last-matches thead th,
+.player-main .partners-table thead th{
+  position: sticky; top: 0; z-index: 1;
+  background:#f8f9fb; color:#2a2f36;
+  font-weight:700; letter-spacing:.2px;
+  border-bottom:1px solid var(--border);
+  padding:10px 12px;
+}
+.player-main .last-matches tbody td,
+.player-main .partners-table tbody td{
+  padding:10px 12px; border-bottom:1px solid #f0f2f6;
+}
+.player-main .last-matches tbody tr:nth-child(odd),
+.player-main .partners-table tbody tr:nth-child(odd){ background:#fcfdff; }
+.player-main .last-matches tbody tr:hover,
+.player-main .partners-table tbody tr:hover{ background:#f6f9ff; }
+
+/* Lignes cliquables / dates */
+.last-matches tbody tr:hover{ background:#f9fbff; }
+.date-cell .row-link{ text-decoration:none; border-bottom:1px dashed #8aa4d0; cursor:pointer; }
+.date-cell .row-link:hover{ border-bottom-color:transparent; }
+
+/* ---------- BADGES (résultats) ---------- */
+.badge-win{
+  background:#e7f7ef; color:#0f7a3a; border:1px solid #bde6cf;
+  font-weight:800; padding:2px 8px; border-radius:16px; display:inline-block;
+}
+.badge-loss{
+  background:#fdebec; color:#b62323; border:1px solid #f5cccc;
+  font-weight:800; padding:2px 8px; border-radius:16px; display:inline-block;
+}
+
+/* ---------- Jauge de taux de réussite ---------- */
+.winrate-wrap{ margin:10px 0 12px; }
+.winrate-bar{
+  height:10px; border-radius:999px; background:#eef1f5;
+  overflow:hidden; border:1px solid #e4e8ee;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.06);
+}
+.winrate-fill{
+  --p: 0%;
+  width: var(--p); height:100%;
+  background: linear-gradient(90deg,#2bb673,#1fa968);
+  border-right:1px solid rgba(0,0,0,.06);
+  transition: width .45s ease;
+}
+.winrate-label{ margin-top:6px; font-weight:700; color:#114b2d; }
+
+/* ---------- Cartes dernier/prochain match (si utilisées ailleurs) ---------- */
 .match-blocks{ display:flex; flex-wrap:wrap; gap:14px; margin-bottom:1.25rem; }
 .match-card{ flex:1; min-width:280px; min-height:190px; background:#fff; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--border); padding:1rem; }
 
+/* ---------- Filtres (Tous / Simple / Double / Mixte) ---------- */
+.table-tools{ display:flex; justify-content:flex-start; margin:6px 0 10px; }
+.filters{ display:flex; gap:8px; flex-wrap:wrap; }
+.filters .filter-btn{
+  display:inline-block; padding:8px 12px; border:1px solid #e5e9f2; border-radius:999px;
+  color:#1f2a44; text-decoration:none; font-weight:700; background:#fff;
+}
+.filters .filter-btn:hover{ border-color:#cfd6e4; background:#f7f9fc; }
+.filters .filter-btn.is-active{
+  background:#c81e4b; color:#fff; border-color:#c81e4b; box-shadow:0 6px 18px rgba(200,30,75,.18);
+}
+
+/* ---------- Etats vides ---------- */
+.empty-state{ padding:12px; color:#6b7280; text-align:center; }
+
+/* ---------- Version cartes (mobile) ---------- */
+.matches-cards{ display:none; }
+.match-card-item{
+  border:1px solid #e8ecf1; border-radius:12px; padding:10px; background:#fff; margin:8px 0;
+  box-shadow:0 6px 18px rgba(0,0,0,.04);
+}
+.match-card-item header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.match-card-item .row-link{ display:inline-block; margin-top:6px; font-weight:700; text-decoration:none; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px){
+  .stat-charts{ grid-template-columns: repeat(2, minmax(220px, 1fr)); }
+}
+@media (max-width: 900px){
+  .last-matches{ display:none; }     /* on masque le tableau */
+  .matches-cards{ display:block; }   /* on montre les cartes */
+  .player-layout{ grid-template-columns:1fr; padding:12px; }
+  .player-aside{ position: static; } /* sidebar non-sticky sur mobile */
+}
+@media (max-width: 700px){
+  .stat-charts{ grid-template-columns: 1fr; }
+}
 /* ==========================================================================  
    MATCHES LISTES & RENCONTRES
    ========================================================================== */
