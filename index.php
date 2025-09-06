@@ -58,85 +58,126 @@ function dt_fr($ts){ return date('d/m/Y \à H\hi', strtotime($ts)); }
 <?php include __DIR__ . '/includes/header.php'; ?>
 
 
-<main class="container">
-  <div class="hero-banner position-relative mb-5">
-    <img src="img/teambanner.jpeg"
-         alt="Équipe InterClubs Badminton – Arras"
-         class="img-fluid w-100 rounded">
-    <div class="hero-text position-absolute top-50 start-50 translate-middle text-center text-white">
-      <h1>Équipe InterClubs<br>Badminton<br>Arras</h1>
-      <p>Passion – Esprit d’équipe – After</p>
-      <a href="#next-match" class="btn btn-warning cta-button">Voir la prochaine rencontre</a>
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <img src="img/teambanner.jpeg" alt="Équipe InterClubs" class="hero-img">
+  <div class="hero-overlay">
+    <div class="hero-content">
+      <h1>Équipe InterClubs<br>Badminton Arras</h1>
+      <p>Passion — Esprit d’équipe — After</p>
+      <a href="rencontres.php" class="btn btn-primary btn-lg">Voir la prochaine rencontre</a>
     </div>
   </div>
-</main>
-<!-- ===== Bloc central : Prochaine rencontre OU Dernier résultat ===== -->
-  <section class="home-section mb-4">
-    <h3 class="mb-2"><?= h($sectionTitl) ?></h3>
+</section>
 
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <?php if ($primary): ?>
-          <?php if ($primary['matchday']): ?>
-            <div class="text-muted mb-2">Journée <strong>J<?= (int)$primary['matchday'] ?></strong></div>
-          <?php endif; ?>
+<main class="container">
 
-          <div class="mb-1">
-            <strong>Date / Heure :</strong>
-            <?= h(dt_fr($primary['date_time'])) ?>
-          </div>
+<div class="card result-card">
+  <div class="card-body">
 
-          <div class="mb-1">
-            <strong>Lieu :</strong>
-            <?= h($primary['venue_name']) ?>
-            <?php if (!empty($primary['venue_city'])): ?>
-              — <?= h($primary['venue_city']) ?>
-            <?php endif; ?>
-          </div>
-
-          <div class="mb-1">
-            <strong>Équipes :</strong>
-            <?= h($primary['home_name']) ?> – <?= h($primary['away_name']) ?>
-          </div>
-
-          <?php if (!$isUpcoming && $primary['status'] === 'played'): ?>
-            <div class="mb-1">
-              <strong>Score :</strong>
-              <?= (int)$primary['score_home'] ?> – <?= (int)$primary['score_away'] ?>
-            </div>
-          <?php endif; ?>
-
-          <div class="mt-2">
-            <a class="btn btn-primary btn-lg" href="rencontres.php">Voir le calendrier complet</a>
-          </div>
-        <?php else: ?>
-          <div class="text-muted">Aucune donnée disponible pour le moment.</div>
+    <div class="result-head">
+      <div class="icon">🏆</div>
+      <div>
+        <h2>Dernier Résultat</h2>
+        <?php if (!empty($last_result['date_time'])): ?>
+          <div class="sub"><?= h(dt_fr($last_result['date_time'])) ?></div>
         <?php endif; ?>
       </div>
     </div>
-  </section>
 
-  <!-- ===== Tes deux tuiles d’accueil (existant) ===== -->
-  <section class="home-tiles">
-    <!-- Bloc cartes côte à côte -->
-<div class="cards-row">
-  <div class="info-card">
-    <h3>👥 <strong>Notre équipe</strong></h3>
-    <p>Découvrez les joueuses et joueurs qui défendent nos couleurs en interclubs.</p>
-    <a class="btn-link" href="equipe.php">Voir l’équipe</a>
-  </div>
+    <?php if (!empty($last_result)): ?>
+      <?php
+        $home = $last_result['home_name'] ?? '';
+        $away = $last_result['away_name'] ?? '';
+        $scoreTxt = isset($last_result['score_home'],$last_result['score_away'])
+          ? ((int)$last_result['score_home'].' – '.(int)$last_result['score_away']) : '';
+        $lieuParts = [];
+        if (!empty($last_result['venue_name'])) $lieuParts[] = $last_result['venue_name'];
+        if (!empty($last_result['venue_city'])) $lieuParts[] = $last_result['venue_city'];
+        $lieu = implode(' — ', $lieuParts);
+      ?>
 
-  <div class="info-card">
-    <h3>🏆 <strong>Détails des matchs</strong></h3>
-    <p>Plongez dans les scores et performances de chaque match de nos journées.</p>
-    <a class="btn-link" href="matches.php">Voir les matchs</a>
+      <div class="result-line">
+        <span class="team"><?= h($home) ?></span>
+        <span class="vs">vs</span>
+        <span class="team"><?= h($away) ?></span>
+
+        <?php if ($scoreTxt !== ''): ?>
+          <span class="score-badge"><?= h($scoreTxt) ?></span>
+        <?php endif; ?>
+      </div>
+
+      <?php if ($lieu !== ''): ?>
+        <div class="meta">
+          <span class="meta-item">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 .001-5.001A2.5 2.5 0 0 1 12 11.5z"/></svg>
+            <?= h($lieu) ?>
+          </span>
+        </div>
+      <?php endif; ?>
+
+    <?php else: ?>
+      <p class="muted">Aucun résultat enregistré.</p>
+    <?php endif; ?>
+
+    <div class="card-actions">
+      <a class="btn btn-primary" href="rencontres.php">Voir le calendrier complet</a>
+      <a class="btn btn-primary" href="matches.php">Voir tous les matchs</a>
+    </div>
   </div>
 </div>
-  </section>
+
+  <!-- ===== 3 cartes d’accès rapide ===== -->
+  <div class="cards-row">
+    <!-- Notre équipe -->
+    <div class="info-card card reveal">
+      <div class="card-body">
+        <div class="card-head">
+          <span class="emoji">👥</span>
+          <strong>Notre équipe</strong>
+        </div>
+        <p class="muted">Découvrez les joueuses et joueurs qui défendent nos couleurs en interclubs.</p>
+        <a href="equipe.php" class="btn btn-primary">Voir l’équipe</a>
+      </div>
+    </div>
+
+    <!-- Rencontres -->
+    <div class="info-card card reveal">
+      <div class="card-body">
+        <div class="card-head">
+          <span class="emoji">📅</span>
+          <strong>Rencontres</strong>
+        </div>
+        <p class="muted">Calendrier & résultats officiels de notre poule.</p>
+        <a href="rencontres.php" class="btn btn-primary">Voir le calendrier</a>
+      </div>
+    </div>
+
+    <!-- Matchs -->
+    <div class="info-card card reveal">
+      <div class="card-body">
+        <div class="card-head">
+          <span class="emoji">🏸</span>
+          <strong>Matchs</strong>
+        </div>
+        <p class="muted">Historique détaillé des matchs de la saison.</p>
+        <a href="matches.php" class="btn btn-primary">Voir les matchs</a>
+      </div>
+    </div>
+  </div>
 
 </main>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
 
-</body>
-</html>
+<!-- ===== micro-animation optionnelle des cartes ===== -->
+<script>
+  (function () {
+    const els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window) || !els.length) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io.unobserve(e.target); }});
+    }, { threshold: .12 });
+    els.forEach(el => io.observe(el));
+  })();
+</script>
