@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mar. 02 sep. 2025 à 13:14
+-- Généré le : sam. 06 sep. 2025 à 15:56
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -360,19 +360,19 @@ INSERT INTO `match_details` (`id`, `joueur_id`, `fixture_id`, `adversaire_id`, `
 (207, 1, NULL, NULL, 'Frédéric DENISSELLE', 'LE VOLANT AIROIS 3', NULL, '2025-02-23 11:30:00', 4, 'Salle Jacques DUCLOS, 62490 Vitry en Artois', '11-21 16-21', 'victoire', 'simple', 0, NULL),
 (208, 3, NULL, NULL, 'Laly GEUJON', 'LE VOLANT AIROIS 3', NULL, '2025-02-23 11:30:00', 4, 'Salle Jacques DUCLOS, 62490 Vitry en Artois', '7-21 12-21', 'victoire', 'simple', 0, NULL),
 (209, 4, NULL, NULL, 'Frédéric DENISSELLE & Valentin DURIEZ', 'LE VOLANT AIROIS 3', 'Antoine HOMBERT', '2025-02-23 11:30:00', 4, 'Salle Jacques DUCLOS, 62490 Vitry en Artois', '15-21 15-21', 'victoire', 'double', 0, NULL),
-(210, 5, NULL, NULL, 'Rémy CHAMPMARTIN & Kelly TETART', 'LE VOLANT AIROIS 3', 'Constance CORNET', '2025-02-23 11:30:00', 4, 'Salle Jacques DUCLOS, 62490 Vitry en Artois', '13-21 15-21', 'victoire', 'mixte', 0, NULL),
-(230, 6, NULL, NULL, 'Michel BERTHE', 'Ent. Sport. Badminton Courrières 4', NULL, '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '22-20 21-23 21-23', 'victoire', 'simple', 0, NULL),
-(231, 4, NULL, NULL, 'Quentin WAHART', 'Ent. Sport. Badminton Courrières 4', NULL, '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '8-21 17-21', 'victoire', 'simple', 0, NULL),
-(232, 1, NULL, NULL, 'Regis TOUZART', 'Ent. Sport. Badminton Courrières 4', NULL, '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '9-21 12-21', 'victoire', 'simple', 0, NULL),
+(210, 5, NULL, NULL, 'Rémy CHAMPMARTIN & Kelly TETART', 'LE VOLANT AIROIS 3', 'Constance CORNET', '2025-02-23 11:30:00', 4, 'Salle Jacques DUCLOS, 62490 Vitry en Artois', '21-13 21-15', 'victoire', 'mixte', 0, NULL),
+(230, 6, NULL, NULL, 'Michel BERTHE', 'Ent. Sport. Badminton Courrières 4', NULL, '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '20-22 23-21 23-21', 'victoire', 'simple', 0, NULL),
+(231, 4, NULL, NULL, 'Quentin WAHART', 'Ent. Sport. Badminton Courrières 4', NULL, '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '21-8 21-17', 'victoire', 'simple', 0, NULL),
+(232, 1, NULL, NULL, 'Regis TOUZART', 'Ent. Sport. Badminton Courrières 4', NULL, '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '21-9 21-12', 'victoire', 'simple', 0, NULL),
 (233, 2, NULL, NULL, 'Alexandrine CHAVATTE', 'Ent. Sport. Badminton Courrières 4', NULL, '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '21-17 21-15', 'défaite', 'simple', 0, NULL),
-(234, 1, NULL, NULL, 'Michel BERTHE & Quentin WAHART', 'Ent. Sport. Badminton Courrières 4', 'Benoît TERGEMINA', '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '21-17 7-21 21-12', 'défaite', 'double', 0, NULL),
-(235, 4, NULL, NULL, 'Regis TOUZART & Romane DECKE', 'Ent. Sport. Badminton Courrières 4', 'Marie DOHEN', '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '22-24 18-21', 'victoire', 'mixte', 0, NULL),
-(236, 6, NULL, NULL, 'Clément LEMAIRE', 'Longuenesse Badminton Club 4', NULL, '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '21-16 21-15', 'défaite', 'simple', 0, NULL),
-(237, 4, NULL, NULL, 'Lucas GAYET', 'Longuenesse Badminton Club 4', NULL, '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '6-21 14-21', 'victoire', 'simple', 0, NULL),
-(238, 1, NULL, NULL, 'Thomas MANTEL', 'Longuenesse Badminton Club 4', NULL, '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '21-18 21-12', 'défaite', 'simple', 0, NULL),
-(239, 3, NULL, NULL, 'Marie MATTE', 'Longuenesse Badminton Club 4', NULL, '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '8-21 11-21', 'victoire', 'simple', 0, NULL),
-(240, 1, NULL, NULL, 'Lucas GAYET & Clément LEMAIRE', 'Longuenesse Badminton Club 4', 'Benoît TERGEMINA', '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '21-17 18-21 21-15', 'défaite', 'double', 0, NULL),
-(241, 4, NULL, NULL, 'Maxime BRIOUL & Anais MARQUETTE', 'Longuenesse Badminton Club 4', 'Constance CORNET', '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '15-21 21-10 21-10', 'défaite', 'mixte', 0, NULL),
+(234, 1, NULL, NULL, 'Michel BERTHE & Quentin WAHART', 'Ent. Sport. Badminton Courrières 4', 'Benoît TERGEMINA', '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '17-21 21-7 12-21', 'défaite', 'double', 0, NULL),
+(235, 4, NULL, NULL, 'Regis TOUZART & Romane DECKE', 'Ent. Sport. Badminton Courrières 4', 'Marie DOHEN', '2025-03-23 09:00:00', 5, 'François Mitterrand, 62000 Arras', '24-22 21-18', 'victoire', 'mixte', 0, NULL),
+(236, 6, NULL, NULL, 'Clément LEMAIRE', 'Longuenesse Badminton Club 4', NULL, '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '15-21 16-21', 'défaite', 'simple', 0, NULL),
+(237, 4, NULL, NULL, 'Lucas GAYET', 'Longuenesse Badminton Club 4', NULL, '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '21-6 21-14', 'victoire', 'simple', 0, NULL),
+(238, 1, NULL, NULL, 'Thomas MANTEL', 'Longuenesse Badminton Club 4', NULL, '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '18-21 12-21', 'défaite', 'simple', 0, NULL),
+(239, 3, NULL, NULL, 'Marie MATTE', 'Longuenesse Badminton Club 4', NULL, '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '21-8 21-11', 'victoire', 'simple', 0, NULL),
+(240, 1, NULL, NULL, 'Lucas GAYET & Clément LEMAIRE', 'Longuenesse Badminton Club 4', 'Benoît TERGEMINA', '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '17-21  21-18 15-21', 'défaite', 'double', 0, NULL),
+(241, 4, NULL, NULL, 'Maxime BRIOUL & Anais MARQUETTE', 'Longuenesse Badminton Club 4', 'Constance CORNET', '2025-03-23 11:30:00', 5, 'François Mitterrand, 62000 Arras', '21-15  10-21 10-21', 'défaite', 'mixte', 0, NULL),
 (242, 6, NULL, NULL, 'Sébastien LEBAS', 'C B Montreuil 3', NULL, '2025-03-23 14:00:00', 5, 'François Mitterrand, 62000 Arras', '21-17 21-9', 'victoire', 'simple', 0, NULL),
 (243, 4, NULL, NULL, 'Aurélien HANNEBIQUE', 'C B Montreuil 3', NULL, '2025-03-23 14:00:00', 5, 'François Mitterrand, 62000 Arras', '21-19 17-21 21-13', 'victoire', 'simple', 0, NULL),
 (244, 7, NULL, NULL, 'Jérémy PATIN', 'C B Montreuil 3', NULL, '2025-03-23 14:00:00', 5, 'François Mitterrand, 62000 Arras', '15-21 17-21', 'défaite', 'simple', 0, NULL),
