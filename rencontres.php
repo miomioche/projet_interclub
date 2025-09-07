@@ -193,9 +193,7 @@ function render_fixture_line(array $f, array $teamIds): string {
             <?php if (!$SHOW_FULL_RES && count($lastResults) > $VISIBLE_COUNT): ?>
               <a href="?full_results=1#results" class="btn btn-sm btn-success rounded-pill">🏸 Historique complet</a>
             <?php elseif ($SHOW_FULL_RES): ?>
-              <a href="rencontres.php#results" class="btn btn-sm btn-success rounded-pill">
-    🏸⬆️ Réduire
-</a>
+              <a href="rencontres.php#results" class="btn btn-sm btn-success rounded-pill">🏸⬆️ Réduire</a>
             <?php endif; ?>
           </div>
         <?php endif; ?>

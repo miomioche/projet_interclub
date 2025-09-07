@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Laisser passer Let's Encrypt
+RewriteCond %{REQUEST_URI} ^/.well-known/acme-challenge/ [NC]
+RewriteRule ^ - [L]
+
+# Forcer le HTTPS
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
