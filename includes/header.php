@@ -14,14 +14,20 @@
 
 </head>
 <body>
-  <header class="header site-header">
+  <header class="site-header">
+  <div class="container header-bar">
+    <a href="index.php" class="brand">
+      <img src="img/bca.png" alt="Logo BCA" class="logo-bca">
+      <h1>Equipe InterClubs Badminton – Arras</h1>
+    </a>
+
   <div class="container" style="padding:0">
-    <h1>Club InterClubs Badminton – Arras</h1>
+    
     <nav class="site-nav" aria-label="Navigation principale">
-      <a href="index.php"class="<?= ($current_page === 'index.php') ? 'active' : '' ?>">Accueil</a>
-      <a href="equipe.php" class="<?= ($current_page === 'joueurs.php') ? 'active' : '' ?>">Équipe</a>
-      <a href="rencontres.php" class="<?= ($current_page === 'rencontres.php') ? 'active' : '' ?>">Rencontres</a>
-      <a href="matches.php" class="<?= ($current_page === 'matches.php') ? 'active' : '' ?>">Matchs</a>
+      <a href="index"class="<?= ($current_page === 'index.php') ? 'active' : '' ?>">Accueil</a>
+      <a href="equipe" class="<?= ($current_page === 'joueurs.php') ? 'active' : '' ?>">Équipe</a>
+      <a href="rencontres" class="<?= ($current_page === 'rencontres.php') ? 'active' : '' ?>">Rencontres</a>
+      <a href="matches" class="<?= ($current_page === 'matches.php') ? 'active' : '' ?>">Matchs</a>
     </nav>
   </div>
 </header>
