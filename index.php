@@ -173,7 +173,6 @@ function dt_fr($ts){ return date('d/m/Y \à H\hi', strtotime($ts)); }
     </div>
   </div>
 
-</main>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
 
