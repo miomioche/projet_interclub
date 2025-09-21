@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : sam. 06 sep. 2025 à 15:56
+-- Généré le : dim. 21 sep. 2025 à 01:56
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -39,6 +39,31 @@ CREATE TABLE `adversaires` (
 INSERT INTO `adversaires` (`id`, `nom`) VALUES
 (1, 'Ent. Sport. Badminton Courrières 4'),
 (2, 'Speed Bad Club 3');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `articles`
+--
+
+CREATE TABLE `articles` (
+  `id` int(11) NOT NULL,
+  `slug` varchar(180) DEFAULT NULL,
+  `titre` varchar(255) NOT NULL,
+  `excerpt` varchar(280) DEFAULT NULL,
+  `cover_url` varchar(255) DEFAULT NULL,
+  `contenu` text NOT NULL,
+  `date_publication` datetime DEFAULT current_timestamp(),
+  `auteur` varchar(100) DEFAULT 'Club'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `articles`
+--
+
+INSERT INTO `articles` (`id`, `slug`, `titre`, `excerpt`, `cover_url`, `contenu`, `date_publication`, `auteur`) VALUES
+(14, NULL, 'Continuité et ambition : un seul changement pour une équipe plus forte', 'Troisième l’an passé, notre équipe repart cette saison avec un seul renfort — Lucie Lebelanger. Comme le PSG ou T1 sur League of Legends, la stabilité peut suffire pour viser plus haut.', NULL, 'La saison dernière, notre équipe a décroché une belle 3ᵉ place dans sa division.  \r\nUn résultat solide, fruit d’un collectif soudé et d’une régularité dans les performances.\r\n\r\n\r\n\r\n\r\nPour cette nouvelle saison, l\'équipe a fait le choix de la continuité.  \r\nLe seul changement majeur est l’arrivée de Lucie Lebelanger, une nouvelle joueuse qui vient renforcer l’effectif existant.\r\n\r\nC’est un choix assumé : comme au PSG dans le football ou chez T1 sur League of Legends, il n’est pas toujours nécessaire de bouleverser une équipe pour la rendre plus forte.  \r\nAu contraire, miser sur la stabilité, capitaliser sur les automatismes déjà acquis et ajouter une touche de nouveauté peut être la recette d’une grande saison.\r\n\r\nAvec un groupe qui se connaît bien, une dynamique positive héritée de la saison passée et une recrue prête à s’intégrer, toutes les conditions sont réunies pour viser plus haut.  \r\nNous avons hâte de voir ce que cette équipe “version 2025–2026” pourra accomplir sur les terrains ! 💪🏸\r\n\r\n« Toujours plus loin, toujours plus haut, toujours plus fort ! » — Olivier Minne\r\n', '2025-09-21 00:34:59', 'le rédacteur  Interclubs'),
+(15, NULL, 'Calendrier des rencontres de la saison 2025–2026', 'Découvrez les dates clés de la saison : cinq rencontres déjà programmées pour notre équipe. Les lieux seront précisés prochainement.', NULL, 'La nouvelle saison démarre et nous avons déjà un premier aperçu du calendrier des rencontres officielles. Voici les dates à retenir : \r\n\r\n- 📅 Dimanche 9 novembre 2025\r\n- 📅 Dimanche 23 novembre 2025\r\n- 📅 Dimanche 14 décembre 2025\r\n- 📅 Dimanche 18 janvier 2026\r\n- 📅 Dimanche 15 mars 2026\r\n\r\nLes lieux exacts des matchs seront communiqués prochainement dès confirmation par la ligue. \r\n\r\nNous vous tiendrons informés au fur et à mesure, alors restez connectés !', '2025-09-21 00:30:10', 'le rédacteur  Interclubs');
 
 -- --------------------------------------------------------
 
@@ -226,7 +251,8 @@ INSERT INTO `joueurs` (`id`, `nom`, `prenom`, `licence`, `classement_simple`, `c
 (4, 'DELATTRE', 'Pierre', '07492441', 'D9 1089', 'P10 976', 'P10 854', 'pierre.jpeg', '2025-09-02 11:13:44', 0, 0, 0, 0, 0, 0),
 (5, 'DELEFOSSE', 'Vincent', '07485284', 'D9 1097', 'P10 889', 'D9 1023', 'vincent.jpeg', '2025-09-02 11:13:44', 0, 0, 0, 0, 0, 0),
 (6, 'HOMBERT', 'Antoine', '00629197', 'D9 1106', 'P10 982', 'P10 830', 'antoine.jpeg', '2025-09-02 11:13:44', 0, 0, 0, 0, 0, 0),
-(7, 'TERGEMINA', 'Benoît', '07439195', 'D9 1007', 'P10 967', 'P10 807', 'benito.jpeg', '2025-09-02 11:13:44', 0, 0, 0, 0, 0, 0);
+(7, 'TERGEMINA', 'Benoît', '07439195', 'D9 1007', 'P10 967', 'P10 807', 'benito.jpeg', '2025-09-02 11:13:44', 0, 0, 0, 0, 0, 0),
+(15, 'Lebelanger', 'Lucie', '6767588', '?', '?', '?', '', '2025-09-20 20:22:23', 0, 0, 0, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -503,6 +529,14 @@ ALTER TABLE `adversaires`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Index pour la table `articles`
+--
+ALTER TABLE `articles`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `slug` (`slug`),
+  ADD KEY `idx_articles_date` (`date_publication`);
+
+--
 -- Index pour la table `classements`
 --
 ALTER TABLE `classements`
@@ -615,6 +649,12 @@ ALTER TABLE `adversaires`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT pour la table `articles`
+--
+ALTER TABLE `articles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
 -- AUTO_INCREMENT pour la table `classements`
 --
 ALTER TABLE `classements`
@@ -648,7 +688,7 @@ ALTER TABLE `interviews`
 -- AUTO_INCREMENT pour la table `joueurs`
 --
 ALTER TABLE `joueurs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT pour la table `lieux`
