@@ -42,3 +42,6 @@ try {
   http_response_code(500);
   exit('Erreur serveur.');
 }
+if ($pdo instanceof PDO) {
+  $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+}

@@ -3,7 +3,7 @@ require_once __DIR__ . '/includes/db.php';
 if (!isset($pdo) || !($pdo instanceof PDO)) { http_response_code(500); exit('DB non initialisée'); }
 
 $TEAM_ID = 1;
-$SEASON  = '2024-2025';
+$SEASON  = '2025-2026';
 
 // Prochaine rencontre
 $sqlNext = "

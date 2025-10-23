@@ -6,7 +6,7 @@ require __DIR__ . '/includes/db.php';
 require __DIR__ . '/includes/header.php';
 
 /* ========= Réglages ========= */
-$SAISON   = $SAISON   ?? '2024-2025';
+$SAISON   = $SAISON   ?? '2025-2026';
 $DIVISION = $DIVISION ?? 'D6';        // pour le classement
 $POULE    = $POULE    ?? 'Poule 7';   // pour le classement (masquée côté UI)
 $CLUB_ID  = 1;                        // BCA (Arras)
@@ -49,7 +49,7 @@ LIMIT 100";
 $paramsResults = array_merge([$SAISON], $teamIds, $teamIds, [$COMPET_FIXTURES, $COMPET_FIXTURES]);
 $stmtResults = $pdo->prepare($sqlResults);
 $stmtResults->execute($paramsResults);
-$lastResults = $stmtResults->fetchAll(PDO::FETCH_ASSOC);
+$lastResults = $stmtResults->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
 $sqlUpcoming = "
 SELECT f.*,
@@ -68,7 +68,10 @@ LIMIT 100";
 $paramsUpcoming = array_merge([$SAISON], $teamIds, $teamIds, [$COMPET_FIXTURES, $COMPET_FIXTURES]);
 $stmtUpcoming = $pdo->prepare($sqlUpcoming);
 $stmtUpcoming->execute($paramsUpcoming);
-$upcoming = $stmtUpcoming->fetchAll(PDO::FETCH_ASSOC);
+$upcoming = $stmtUpcoming->fetchAll(PDO::FETCH_ASSOC) ?: [];
+// Sous-liste affichée (réduite ou complète)
+$list_upcoming = $SHOW_FULL_UPC ? $upcoming : array_slice($upcoming, 0, $VISIBLE_COUNT);
+
 
 /* ============ 3) Classement (division + poule masquée en UI) ============ */
 $sqlStandings = "
@@ -151,30 +154,31 @@ function render_fixture_line(array $f, array $teamIds): string {
   <h2 class="mb-4">Calendrier des Rencontres</h2>
 
   <div class="cards-grid">
-    <!-- À venir -->
-    <div class="card shadow-sm" id="upcoming">
-  <div class="card-body">
-    <h5 class="card-title mb-3">À venir</h5>
+  <!-- À venir -->
+  <div class="card shadow-sm" id="upcoming">
+    <div class="card-body">
+      <h5 class="card-title mb-3">À venir</h5>
 
-    <?php if (empty($upcoming)): ?>
-      <div class="text-muted">Aucune rencontre programmée.</div>
-    <?php else: ?>
-      <ul class="match-list">
-        <?php foreach ($list_upcoming as $f) echo render_fixture_line($f, $teamIds); ?>
-      </ul>
+      <?php if (empty($list_upcoming)): ?>
+        <div class="text-muted">Aucune rencontre programmée.</div>
+      <?php else: ?>
+        <ul class="match-list">
+          <?php foreach ($list_upcoming as $f) echo render_fixture_line($f, $teamIds); ?>
+        </ul>
 
-      <div class="mt-2">
-        <?php if (!$show_full_upcoming && count($upcoming) > $VISIBLE_COUNT): ?>
-          <a href="?full_upcoming=1#upcoming" class="btn btn-sm btn-success rounded-pill">
-            🏸 Historique complet
-          </a>
-        <?php elseif ($show_full_upcoming): ?>
-          <a href="rencontres.php#upcoming" class="btn btn-sm btn-success rounded-pill">
-            🏸⬆️ Réduire
-          </a>
-        <?php endif; ?>
-      </div>
-    <?php endif; ?>
+        <div class="mt-2">
+          <?php if (!$SHOW_FULL_UPC && count($upcoming) > $VISIBLE_COUNT): ?>
+    <a href="?full_upcoming=1#upcoming" class="btn btn-sm btn-success rounded-pill">
+      🏸 Historique complet
+    </a>
+<?php elseif ($SHOW_FULL_UPC): ?>
+    <a href="rencontres.php#upcoming" class="btn btn-sm btn-success rounded-pill">
+      🏸⬆️ Réduire
+    </a>
+<?php endif; ?>
+        </div>
+      <?php endif; ?>
+    </div>
   </div>
 </div>
 
